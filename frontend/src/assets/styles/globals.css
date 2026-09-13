@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-primary: #1a5c2a;
+    --color-primary-dark: #0f3d1a;
+    --color-primary-light: #2d7a3e;
+    --color-accent: #4caf50;
+    --color-accent-light: #e8f5e9;
+    --color-danger: #e53935;
+    --color-warning: #f59e0b;
+    --color-sidebar: #1a5c2a;
+    --color-sidebar-active: #0f3d1a;
+    --color-sidebar-text: #e8f5e9;
+    --color-bg: #f7f9f7;
+    --color-surface: #ffffff;
+    --color-border: #e2e8e4;
+    --color-text: #1a2e1d;
+    --color-text-muted: #6b7c6e;
+  }
+}
+
+@layer base {
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+  }
+  input, textarea, select { outline: none; }
+}

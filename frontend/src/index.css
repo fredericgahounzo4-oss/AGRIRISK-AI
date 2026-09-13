@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+/*
+ * Thème AgriRisk AI — palette verte agriculture + sidebar foncée
+ * Tailwind v4 : déclaration du thème via @theme (remplace tailwind.config.js pour les tokens)
+ */
+@theme {
+  --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
+
+  /* Vert principal (boutons, accents, sidebar active) */
+  --color-brand-50: #f0fdf4;
+  --color-brand-100: #dcfce7;
+  --color-brand-200: #bbf7d0;
+  --color-brand-300: #86efac;
+  --color-brand-400: #4ade80;
+  --color-brand-500: #22c55e;
+  --color-brand-600: #16a34a;
+  --color-brand-700: #15803d;
+  --color-brand-800: #166534;
+  --color-brand-900: #14532d;
+
+  /* Vert foncé sidebar (proche de la maquette) */
+  --color-sidebar: #0f2e1d;
+  --color-sidebar-hover: #163d27;
+  --color-sidebar-active: #1f7a43;
+
+  /* Couleurs sémantiques */
+  --color-danger-50: #fef2f2;
+  --color-danger-500: #ef4444;
+  --color-danger-600: #dc2626;
+  --color-warning-50: #fffbeb;
+  --color-warning-500: #f59e0b;
+  --color-success-50: #f0fdf4;
+  --color-success-500: #22c55e;
+
+  --radius-card: 0.75rem;
+}
+
+@layer base {
+  html,
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+
+  * {
+    @apply border-gray-200;
+  }
+}
+
+@layer utilities {
+  /* Scrollbar fine pour les listes (conversations, fournisseurs, etc.) */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: theme(--color-gray-300);
+    border-radius: 9999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
