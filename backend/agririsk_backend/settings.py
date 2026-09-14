@@ -129,6 +129,9 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
@@ -171,3 +174,31 @@ CORS_ALLOW_CREDENTIALS = True
 # Email — en développement, les emails s'affichent simplement dans la console
 # ------------------------------------------------------------------
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+
+# ------------------------------------------------------------------
+# Logging — sans ça, Django n'écrit les erreurs 500 nulle part de visible
+# en production (DEBUG=False) : elles ne partent que par email (non
+# configuré). On force ici l'affichage sur la sortie standard, que Render
+# capture dans l'onglet "Logs", avec la trace Python complète.
+# ------------------------------------------------------------------
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
+}
