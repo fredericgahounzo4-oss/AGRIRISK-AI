@@ -49,10 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    # cloudinary_storage doit être déclaré AVANT staticfiles (exigence du package).
-    "cloudinary_storage",
     "django.contrib.staticfiles",
-    "cloudinary",
     # Tiers
     "rest_framework",
     "rest_framework.authtoken",
