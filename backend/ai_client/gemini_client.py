@@ -18,7 +18,10 @@ import requests
 GEMINI_API_URL_TEMPLATE = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
 # Modèle utilisé pour toutes les fonctionnalités IA de l'app.
-MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+# "gemini-2.5-flash" a été retiré par Google pour les nouvelles clés API
+# (message d'erreur 404 recommandant gemini-3.6-flash) — voir GEMINI_MODEL
+# dans les variables d'environnement pour changer sans toucher au code.
+MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
 
 
 class AIConfigError(Exception):
