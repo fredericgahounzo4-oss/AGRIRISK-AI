@@ -37,5 +37,9 @@ urlpatterns = [
     path("api/notifications/<uuid:pk>/read", notification_views.NotificationMarkReadView.as_view(), name="notifications-mark-read"),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Sert les fichiers médias (avatars, images de diagnostic) même en
+# production. Ce n'est pas la solution la plus scalable (un vrai
+# stockage type S3 serait préférable à grande échelle), mais suffisant
+# pour la taille actuelle du projet, et bien plus simple à mettre en
+# place qu'un service de stockage externe.
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

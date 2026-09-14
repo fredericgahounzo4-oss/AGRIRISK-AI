@@ -12,6 +12,7 @@ et ne doit pas être utilisé ici pour un usage durable.
 
 import base64
 import os
+import time
 
 import requests
 
@@ -22,6 +23,12 @@ GEMINI_API_URL_TEMPLATE = "https://generativelanguage.googleapis.com/v1beta/mode
 # (message d'erreur 404 recommandant gemini-3.6-flash) — voir GEMINI_MODEL
 # dans les variables d'environnement pour changer sans toucher au code.
 MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
+
+# Codes renvoyés par Gemini quand le service est temporairement saturé —
+# ça vaut le coup de réessayer une fois ou deux avant d'abandonner.
+_RETRYABLE_STATUS_CODES = {429, 500, 503}
+_MAX_RETRIES = 2
+_RETRY_DELAY_SECONDS = 3
 
 
 class AIConfigError(Exception):
@@ -40,6 +47,30 @@ def _get_api_key() -> str:
             "Ajoutez-la dans backend/.env (voir .env.example)."
         )
     return key
+
+
+def _friendly_error_message(response: requests.Response) -> str:
+    """Traduit une erreur HTTP Gemini en message compréhensible, sans JSON brut."""
+    if response.status_code in (429, 503):
+        return (
+            "Le service d'intelligence artificielle est momentanément surchargé "
+            "ou limité en débit. Réessayez dans quelques instants."
+        )
+    if response.status_code == 404:
+        return (
+            "Le modèle IA configuré n'est plus disponible. "
+            "Vérifiez la variable GEMINI_MODEL côté serveur."
+        )
+    if response.status_code in (401, 403):
+        return "La clé API Gemini est invalide ou n'a pas les droits nécessaires."
+
+    # Erreur moins courante : on garde un extrait technique pour le debug,
+    # mais toujours sans exposer le JSON complet à l'utilisateur.
+    try:
+        detail = response.json().get("error", {}).get("message", "")
+    except (ValueError, AttributeError):
+        detail = response.text[:200]
+    return f"Erreur du service IA ({response.status_code}). {detail}".strip()
 
 
 def call_gemini(messages: list[dict], system: str | None = None, max_tokens: int = 1500) -> str:
@@ -67,17 +98,30 @@ def call_gemini(messages: list[dict], system: str | None = None, max_tokens: int
         payload["systemInstruction"] = {"parts": [{"text": system}]}
 
     url = GEMINI_API_URL_TEMPLATE.format(model=MODEL)
-    try:
-        response = requests.post(
-            url, params={"key": _get_api_key()}, json=payload, timeout=60
-        )
-    except requests.RequestException as exc:
-        raise AIRequestError(f"Impossible de contacter l'API Gemini : {exc}") from exc
+    api_key = _get_api_key()
+
+    response = None
+    last_exc = None
+    for attempt in range(_MAX_RETRIES + 1):
+        try:
+            response = requests.post(url, params={"key": api_key}, json=payload, timeout=60)
+        except requests.RequestException as exc:
+            last_exc = exc
+            response = None
+        else:
+            last_exc = None
+            if response.status_code not in _RETRYABLE_STATUS_CODES:
+                break
+
+        if attempt < _MAX_RETRIES:
+            time.sleep(_RETRY_DELAY_SECONDS)
+
+    if response is None:
+        raise AIRequestError(f"Impossible de contacter l'API Gemini : {last_exc}") from last_exc
 
     if response.status_code != 200:
-        raise AIRequestError(
-            f"Erreur API Gemini ({response.status_code}) : {response.text[:500]}"
-        )
+        friendly = _friendly_error_message(response)
+        raise AIRequestError(friendly)
 
     data = response.json()
     try:
