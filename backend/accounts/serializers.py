@@ -79,6 +79,7 @@ class RegisterSupplierSerializer(BaseRegisterSerializer):
             company=validated_data.get("company", ""),
             category=validated_data.get("category", ""),
             role=User.Role.SUPPLIER,
+            status=User.Status.PENDING,
         )
         user.set_password(password)
         user.save()

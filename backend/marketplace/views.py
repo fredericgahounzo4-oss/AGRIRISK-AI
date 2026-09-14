@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from .models import Product, ProductRequest
 from .serializers import CreateProductRequestSerializer, ProductWriteSerializer
 from notifications.models import notify
+from adminpanel.models import ActivityLog, log_activity
 
 
 class ProductListCreateView(APIView):
@@ -31,6 +32,10 @@ class ProductListCreateView(APIView):
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
         product = serializer.save(supplier=request.user)
+        log_activity(
+            f"Produit ajouté : {product.name}", user=request.user,
+            type=ActivityLog.Type.PRODUCT,
+        )
         return Response(product.to_frontend_dict(request=request), status=status.HTTP_201_CREATED)
 
 
@@ -89,6 +94,11 @@ class RequestActionView(APIView):
             )
         req.status = new_status
         req.save(update_fields=["status"])
+        log_activity(
+            f"Demande {'acceptée' if new_status == ProductRequest.Status.ACCEPTED else 'refusée'} : "
+            f"{req.quantity}x {req.product_name}",
+            user=request.user, type=ActivityLog.Type.REQUEST,
+        )
 
         if req.farmer is not None:
             if new_status == ProductRequest.Status.ACCEPTED:
@@ -152,5 +162,9 @@ class CreateRequestView(APIView):
             body=f"{request.user.name} souhaite {data['quantity']}x {product.name}.",
             icon="📦",
             link="/fournisseur/demandes",
+        )
+        log_activity(
+            f"Nouvelle demande : {request.user.name} → {data['quantity']}x {product.name}",
+            user=request.user, type=ActivityLog.Type.REQUEST,
         )
         return Response(req.to_frontend_dict(), status=status.HTTP_201_CREATED)

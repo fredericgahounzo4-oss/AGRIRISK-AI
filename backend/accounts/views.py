@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import PasswordResetToken
+from adminpanel.models import ActivityLog, log_activity
 from .serializers import (
     AvatarUploadSerializer,
     ChangePasswordSerializer,
@@ -39,11 +40,17 @@ class LoginView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if not serializer.is_valid():
+            log_activity(
+                "Tentative de connexion échouée",
+                type=ActivityLog.Type.AUTH,
+                severity=ActivityLog.Severity.DANGER,
+            )
             return Response(
                 {"message": "Email ou mot de passe incorrect.", "errors": serializer.errors},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         user = serializer.validated_data["user"]
+        log_activity(f"Connexion réussie : {user.name}", user=user, type=ActivityLog.Type.AUTH)
         return Response(auth_response(user, request=request))
 
 
@@ -60,6 +67,10 @@ class RegisterFarmerView(APIView):
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
         user = serializer.save()
+        log_activity(
+            f"Nouvel agriculteur inscrit : {user.name}", user=user,
+            type=ActivityLog.Type.REGISTER,
+        )
         return Response(
             auth_response(user, message="Compte créé avec succès.", request=request),
             status=status.HTTP_201_CREATED,
@@ -79,6 +90,10 @@ class RegisterSupplierView(APIView):
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
         user = serializer.save()
+        log_activity(
+            f"Nouveau fournisseur inscrit : {user.name}", user=user,
+            type=ActivityLog.Type.REGISTER,
+        )
         return Response(
             auth_response(user, message="Compte fournisseur créé avec succès.", request=request),
             status=status.HTTP_201_CREATED,

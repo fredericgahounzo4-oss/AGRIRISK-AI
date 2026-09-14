@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "chat",
     "marketplace",
     "notifications",
+    "adminpanel",
 ]
 
 MIDDLEWARE = [

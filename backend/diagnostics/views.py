@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 
 from ai_client.gemini_client import AIConfigError, AIRequestError
 from notifications.models import notify
+from adminpanel.models import ActivityLog, log_activity
 
 from .models import Diagnostic
 from .serializers import DiagnosticUploadSerializer
@@ -79,6 +80,11 @@ class DiagnosticListCreateView(APIView):
             body=f"{diagnostic.disease_name} — risque {diagnostic.risk_level.lower()}.",
             icon="🌿" if diagnostic_type == "culture" else "🐄",
             link=f"/app/diagnostic/resultat/{diagnostic.id}",
+        )
+        log_activity(
+            f"Diagnostic soumis : {diagnostic.disease_name}", user=request.user,
+            type=ActivityLog.Type.DIAGNOSTIC,
+            severity=ActivityLog.Severity.WARNING if diagnostic.risk_level in ("Élevé", "Critique") else ActivityLog.Severity.INFO,
         )
 
         return Response(

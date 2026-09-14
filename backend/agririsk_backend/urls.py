@@ -11,6 +11,7 @@ from notifications import views as notification_views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/auth/", include("accounts.urls")),
+    path("api/admin/", include("adminpanel.urls")),
 
     # Diagnostics — routes déclarées directement ici pour matcher exactement
     # les URL sans slash final attendues par le frontend (src/services/api.ts).

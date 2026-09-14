@@ -1,23 +1,21 @@
-import { MOCK_ADMIN_USERS } from '@/services/mockData';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
+import { Loader } from '@/components/ui/Loader';
 import { Search, Building2, CheckCircle2, XCircle, X, Mail, MapPin, Calendar } from 'lucide-react';
 import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { useAdminSuppliers, useValidateSupplier, useRejectSupplier } from '../hooks/useAdmin';
+import type { AdminUser } from '../types';
 
 export function AdminSuppliersPage() {
   const [search, setSearch] = useState('');
-  const [suppliers, setSuppliers] = useState(() => MOCK_ADMIN_USERS.filter(u => u.role === 'supplier'));
-  const [detailsSupplier, setDetailsSupplier] = useState<typeof suppliers[number] | null>(null);
+  const { data: suppliers = [], isLoading, isError } = useAdminSuppliers();
+  const validateSupplier = useValidateSupplier();
+  const rejectSupplier = useRejectSupplier();
+  const [detailsSupplier, setDetailsSupplier] = useState<AdminUser | null>(null);
 
-  const filtered = suppliers.filter(u => 
+  const filtered = suppliers.filter(u =>
     u.name.toLowerCase().includes(search.toLowerCase())
   );
-
-  const handleDecision = (id: string, name: string, decision: 'active' | 'rejected') => {
-    setSuppliers((prev) => prev.map((s) => (s.id === id ? { ...s, status: decision } : s)));
-    toast.success(decision === 'active' ? `${name} a été validé.` : `${name} a été refusé.`);
-  };
 
   return (
     <div className="space-y-6">
@@ -30,8 +28,8 @@ export function AdminSuppliersPage() {
 
       <div className="flex gap-4">
         <div className="flex-1 max-w-md">
-          <Input 
-            placeholder="Rechercher un fournisseur..." 
+          <Input
+            placeholder="Rechercher un fournisseur..."
             leftIcon={<Search className="w-4 h-4" />}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -39,63 +37,71 @@ export function AdminSuppliersPage() {
         </div>
       </div>
 
-      <div className="grid gap-4">
-        {filtered.map(supplier => (
-          <Card key={supplier.id} padding="md" className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50">
-                <Building2 className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900">{supplier.name}</h3>
-                <p className="text-sm text-gray-500 mt-0.5">{supplier.email}</p>
-                <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
-                  <span className="font-medium bg-gray-100 px-2 py-0.5 rounded">{supplier.region}</span>
-                  <span>Inscrit le {new Date(supplier.created_at).toLocaleDateString('fr-FR')}</span>
+      {isLoading ? (
+        <div className="p-10 flex justify-center"><Loader /></div>
+      ) : isError ? (
+        <div className="p-8 text-center text-red-600">Impossible de charger les fournisseurs.</div>
+      ) : (
+        <div className="grid gap-4">
+          {filtered.map(supplier => (
+            <Card key={supplier.id} padding="md" className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50">
+                  <Building2 className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900">{supplier.name}</h3>
+                  <p className="text-sm text-gray-500 mt-0.5">{supplier.email}</p>
+                  <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+                    <span className="font-medium bg-gray-100 px-2 py-0.5 rounded">{supplier.region || '—'}</span>
+                    <span>Inscrit le {new Date(supplier.created_at).toLocaleDateString('fr-FR')}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="flex items-center justify-between md:justify-end gap-4 border-t md:border-0 pt-4 md:pt-0 border-gray-100">
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                supplier.status === 'active' ? 'bg-green-50 text-green-700' :
-                supplier.status === 'suspended' || supplier.status === 'rejected' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'
-              }`}>
-                {supplier.status === 'active' ? 'Vérifié' : supplier.status === 'suspended' ? 'Suspendu' : supplier.status === 'rejected' ? 'Refusé' : 'En attente de validation'}
-              </span>
+              <div className="flex items-center justify-between md:justify-end gap-4 border-t md:border-0 pt-4 md:pt-0 border-gray-100">
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  supplier.status === 'active' ? 'bg-green-50 text-green-700' :
+                  supplier.status === 'suspended' || supplier.status === 'rejected' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'
+                }`}>
+                  {supplier.status === 'active' ? 'Vérifié' : supplier.status === 'suspended' ? 'Suspendu' : supplier.status === 'rejected' ? 'Refusé' : 'En attente de validation'}
+                </span>
 
-              {supplier.status === 'pending' ? (
-                <div className="flex gap-2">
+                {supplier.status === 'pending' ? (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => validateSupplier.mutate(supplier.id)}
+                      disabled={validateSupplier.isPending || rejectSupplier.isPending}
+                      title="Valider le fournisseur"
+                      className="flex items-center justify-center h-8 w-8 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition-colors disabled:opacity-50"
+                    >
+                      <CheckCircle2 className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => rejectSupplier.mutate(supplier.id)}
+                      disabled={validateSupplier.isPending || rejectSupplier.isPending}
+                      title="Refuser"
+                      className="flex items-center justify-center h-8 w-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50"
+                    >
+                      <XCircle className="w-5 h-5" />
+                    </button>
+                  </div>
+                ) : (
                   <button
-                    onClick={() => handleDecision(supplier.id, supplier.name, 'active')}
-                    title="Valider le fournisseur"
-                    className="flex items-center justify-center h-8 w-8 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition-colors"
+                    onClick={() => setDetailsSupplier(supplier)}
+                    className="text-sm font-medium text-blue-600 hover:underline"
                   >
-                    <CheckCircle2 className="w-5 h-5" />
+                    Voir le dossier
                   </button>
-                  <button
-                    onClick={() => handleDecision(supplier.id, supplier.name, 'rejected')}
-                    title="Refuser"
-                    className="flex items-center justify-center h-8 w-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-                  >
-                    <XCircle className="w-5 h-5" />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setDetailsSupplier(supplier)}
-                  className="text-sm font-medium text-blue-600 hover:underline"
-                >
-                  Voir le dossier
-                </button>
-              )}
-            </div>
-          </Card>
-        ))}
-        {filtered.length === 0 && (
-          <div className="p-8 text-center text-gray-500">Aucun fournisseur trouvé.</div>
-        )}
-      </div>
+                )}
+              </div>
+            </Card>
+          ))}
+          {filtered.length === 0 && (
+            <div className="p-8 text-center text-gray-500">Aucun fournisseur trouvé.</div>
+          )}
+        </div>
+      )}
 
       {/* Modal dossier fournisseur */}
       {detailsSupplier && (
@@ -128,7 +134,7 @@ export function AdminSuppliersPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-gray-400" />
-                  {detailsSupplier.region}
+                  {detailsSupplier.region || '—'}
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-gray-400" />

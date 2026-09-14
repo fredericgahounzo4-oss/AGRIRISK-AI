@@ -16,11 +16,18 @@ class User(AbstractUser):
         SUPPLIER = "supplier", "Fournisseur"
         ADMIN = "admin", "Administrateur"
 
+    class Status(models.TextChoices):
+        ACTIVE = "active", "Actif"
+        PENDING = "pending", "En attente de validation"
+        SUSPENDED = "suspended", "Suspendu"
+        REJECTED = "rejected", "Refusé"
+
     # On garde username (requis par AbstractUser) mais on s'authentifie par email.
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=150, blank=True)
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.FARMER)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
     phone = models.CharField(max_length=30, blank=True, null=True)
     region = models.CharField(max_length=100, blank=True, null=True)
 
@@ -69,6 +76,13 @@ class User(AbstractUser):
             "country": self.country,
             "created_at": self.date_joined.isoformat(),
         }
+
+    def to_admin_dict(self, request=None):
+        """Format utilisé par les pages Admin (Utilisateurs / Fournisseurs)."""
+        base = self.to_frontend_dict(request=request)
+        base["status"] = self.status
+        base["diagnostics"] = self.diagnostics.count()
+        return base
 
 
 class PasswordResetToken(models.Model):
