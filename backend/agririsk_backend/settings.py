@@ -49,7 +49,10 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    # cloudinary_storage doit être déclaré AVANT staticfiles (exigence du package).
+    "cloudinary_storage",
     "django.contrib.staticfiles",
+    "cloudinary",
     # Tiers
     "rest_framework",
     "rest_framework.authtoken",
@@ -136,6 +139,16 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+
+# En local (pas de CLOUDINARY_URL) : stockage sur disque, comme ci-dessus.
+# En production : Cloudinary, pour que les fichiers survivent aux
+# redéploiements (le disque de Render est effacé à chaque déploiement).
+# CLOUDINARY_URL a le format : cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+# (fourni tel quel par le dashboard Cloudinary, rien à recomposer).
+if os.environ.get("CLOUDINARY_URL"):
+    STORAGES["default"] = {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    }
 
 # Fichiers médias (photos de profil, images de diagnostics, etc.)
 MEDIA_URL = "media/"

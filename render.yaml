@@ -22,6 +22,8 @@ services:
         sync: false   # à coller : la connection string Neon (postgresql://...)
       - key: GEMINI_API_KEY
         sync: false   # à définir manuellement (clé Google AI Studio)
+      - key: CLOUDINARY_URL
+        sync: false   # à coller : cloudinary://API_KEY:API_SECRET@CLOUD_NAME
 
   # --- Frontend Vite (site statique) ---
   - type: web
