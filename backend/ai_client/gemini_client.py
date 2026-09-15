@@ -12,6 +12,7 @@ et ne doit pas être utilisé ici pour un usage durable.
 
 import base64
 import os
+import random
 import time
 
 import requests
@@ -25,10 +26,14 @@ GEMINI_API_URL_TEMPLATE = "https://generativelanguage.googleapis.com/v1beta/mode
 MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
 
 # Codes renvoyés par Gemini quand le service est temporairement saturé —
-# ça vaut le coup de réessayer une fois ou deux avant d'abandonner.
+# ça vaut le coup de réessayer avant d'abandonner, avec un délai qui
+# augmente à chaque tentative (backoff exponentiel + petit aléa pour
+# éviter que plusieurs requêtes ne retentent toutes exactement en même
+# temps). Le total (jusqu'à ~30s d'attente cumulée) reste largement sous
+# le timeout de 120s configuré côté Gunicorn.
 _RETRYABLE_STATUS_CODES = {429, 500, 503}
-_MAX_RETRIES = 2
-_RETRY_DELAY_SECONDS = 3
+_MAX_RETRIES = 4
+_BASE_RETRY_DELAY_SECONDS = 2
 
 
 class AIConfigError(Exception):
@@ -73,6 +78,24 @@ def _friendly_error_message(response: requests.Response) -> str:
     return f"Erreur du service IA ({response.status_code}). {detail}".strip()
 
 
+def _next_retry_delay(attempt: int, response: "requests.Response | None") -> float:
+    """
+    Calcule le délai avant la prochaine tentative. Respecte l'en-tête
+    Retry-After renvoyé par Google si présent (cas des 429), sinon
+    backoff exponentiel (2s, 4s, 8s, 16s...) avec un petit aléa.
+    """
+    if response is not None:
+        retry_after = response.headers.get("Retry-After")
+        if retry_after:
+            try:
+                return min(float(retry_after), 20)
+            except ValueError:
+                pass
+    delay = _BASE_RETRY_DELAY_SECONDS * (2 ** attempt)
+    jitter = random.uniform(0, 1)
+    return min(delay + jitter, 20)
+
+
 def call_gemini(messages: list[dict], system: str | None = None, max_tokens: int = 1500) -> str:
     """
     Appelle l'API Gemini (generateContent) et renvoie le texte de la réponse.
@@ -114,7 +137,7 @@ def call_gemini(messages: list[dict], system: str | None = None, max_tokens: int
                 break
 
         if attempt < _MAX_RETRIES:
-            time.sleep(_RETRY_DELAY_SECONDS)
+            time.sleep(_next_retry_delay(attempt, response))
 
     if response is None:
         raise AIRequestError(f"Impossible de contacter l'API Gemini : {last_exc}") from last_exc
