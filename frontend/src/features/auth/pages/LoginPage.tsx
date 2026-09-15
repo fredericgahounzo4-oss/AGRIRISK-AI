@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, Leaf } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Leaf, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -18,6 +18,7 @@ type FormData = z.infer<typeof schema>;
 
 export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [registerOpen, setRegisterOpen] = useState(false);
   const { mutate: login, isPending } = useLogin();
   const { t } = useTranslation();
 
@@ -83,18 +84,37 @@ export function LoginPage() {
             <h2 className="text-2xl font-bold text-[#1a2e1d]">{t('auth.loginTitle')}</h2>
             <div className="mt-1 flex items-center gap-1.5 text-sm text-[#6b7c6e]">
               {t('auth.noAccount')}{' '}
-              <div className="relative group inline-block">
-                <span className="font-medium text-[#1a5c2a] hover:underline cursor-pointer">
+              <div className="relative inline-block">
+                <button
+                  type="button"
+                  onClick={() => setRegisterOpen((v) => !v)}
+                  className="inline-flex items-center gap-1 font-medium text-[#1a5c2a] hover:underline cursor-pointer"
+                >
                   {t('nav.register')}
-                </span>
-                <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-                  <Link to="/inscription/agriculteur" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#e8f5e9] hover:text-[#1a5c2a] rounded-t-xl transition-colors">
-                    🌱 {t('auth.asFarmer')}
-                  </Link>
-                  <Link to="/inscription/fournisseur" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#e8f5e9] hover:text-[#1a5c2a] rounded-b-xl transition-colors">
-                    🏪 {t('auth.asSupplier')}
-                  </Link>
-                </div>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${registerOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {registerOpen && (
+                  <>
+                    {/* Overlay invisible pour fermer le menu au clic en dehors */}
+                    <div className="fixed inset-0 z-10" onClick={() => setRegisterOpen(false)} />
+                    <div className="absolute left-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-100 z-20">
+                      <Link
+                        to="/inscription/agriculteur"
+                        onClick={() => setRegisterOpen(false)}
+                        className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#e8f5e9] hover:text-[#1a5c2a] rounded-t-xl transition-colors"
+                      >
+                        🌱 {t('auth.asFarmer')}
+                      </Link>
+                      <Link
+                        to="/inscription/fournisseur"
+                        onClick={() => setRegisterOpen(false)}
+                        className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-[#e8f5e9] hover:text-[#1a5c2a] rounded-b-xl transition-colors"
+                      >
+                        🏪 {t('auth.asSupplier')}
+                      </Link>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
