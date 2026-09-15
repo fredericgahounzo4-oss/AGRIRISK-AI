@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { CloudUpload, X, Image as ImageIcon } from 'lucide-react';
+import { CloudUpload, X, Camera } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
 interface ImageUploaderProps {
@@ -52,12 +52,12 @@ export function ImageUploader({ onFileSelect, selectedFile, onClear }: ImageUplo
   }
 
   return (
-    <label
+    <div
       className={cn(
-        'flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-10 cursor-pointer transition-all',
+        'flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-10 transition-all',
         isDragging
           ? 'border-[#4caf50] bg-[#e8f5e9]'
-          : 'border-[#e2e8e4] hover:border-[#4caf50] hover:bg-[#f0f9f0]'
+          : 'border-[#e2e8e4]'
       )}
       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
       onDragLeave={() => setIsDragging(false)}
@@ -66,20 +66,35 @@ export function ImageUploader({ onFileSelect, selectedFile, onClear }: ImageUplo
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e8f5e9]">
         <CloudUpload className="w-7 h-7 text-[#1a5c2a]" />
       </div>
-      <div className="text-center">
-        <p className="text-sm font-medium text-[#1a2e1d]">Glissez-déposez votre image ici</p>
-        <p className="text-xs text-[#6b7c6e] mt-1">ou</p>
-        <span className="mt-1 inline-block text-sm font-semibold text-[#1a5c2a] hover:underline">
+      <p className="text-sm font-medium text-[#1a2e1d] text-center">Glissez-déposez votre image ici</p>
+      <p className="text-xs text-[#6b7c6e]">ou</p>
+
+      <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+        <label className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border-2 border-[#4caf50] text-[#1a5c2a] text-sm font-semibold cursor-pointer hover:bg-[#e8f5e9] transition-colors">
+          <CloudUpload className="w-4 h-4" />
           Choisir une image
-        </span>
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+          />
+        </label>
+
+        <label className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#1a5c2a] text-white text-sm font-semibold cursor-pointer hover:bg-[#15803d] transition-colors">
+          <Camera className="w-4 h-4" />
+          Prendre une photo
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            capture="environment"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+          />
+        </label>
       </div>
-      <p className="text-xs text-[#9aab9e]">Formats acceptés : JPG, PNG (Max. 5Mo)</p>
-      <input
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        className="hidden"
-        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
-      />
-    </label>
+
+      <p className="text-xs text-[#9aab9e] text-center">Formats acceptés : JPG, PNG (Max. 5Mo)</p>
+    </div>
   );
 }
