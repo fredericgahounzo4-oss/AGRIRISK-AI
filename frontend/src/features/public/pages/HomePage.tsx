@@ -63,14 +63,66 @@ export function HomePage() {
               </div>
             </div>
 
-            {/* Hero Image / Mockup */}
+            {/* Hero Illustration — SVG maison, pas de dépendance externe */}
             <div className="relative hidden lg:block">
               <div className="absolute inset-0 bg-gradient-to-tr from-[#1a5c2a] to-transparent rounded-3xl transform rotate-3 scale-105 opacity-50"></div>
-              <img
-                src="https://images.unsplash.com/photo-1592982537447-6f2c3a50d4f1?auto=format&fit=crop&q=80&w=800"
-                alt={t('home.heroImageAlt')}
-                className="relative z-10 rounded-3xl shadow-2xl border border-white/10 object-cover h-[500px] w-full"
-              />
+              <svg
+                viewBox="0 0 400 500"
+                role="img"
+                aria-label={t('home.heroImageAlt')}
+                className="relative z-10 rounded-3xl shadow-2xl border border-white/10 w-full h-[500px]"
+              >
+                <defs>
+                  <linearGradient id="heroBg" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#1a5c2a" />
+                    <stop offset="100%" stopColor="#0a1f11" />
+                  </linearGradient>
+                  <linearGradient id="leafGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#4ade80" />
+                    <stop offset="100%" stopColor="#16a34a" />
+                  </linearGradient>
+                </defs>
+
+                <rect width="400" height="500" fill="url(#heroBg)" />
+
+                {/* Décor : cercles doux */}
+                <circle cx="40" cy="440" r="90" fill="#22c55e" opacity="0.12" />
+                <circle cx="370" cy="60" r="120" fill="#4ade80" opacity="0.1" />
+
+                {/* Petites feuilles décoratives */}
+                <g opacity="0.35">
+                  <path d="M60 120 Q80 100 100 120 Q80 140 60 120 Z" fill="#4ade80" />
+                  <path d="M320 400 Q340 380 360 400 Q340 420 320 400 Z" fill="#4ade80" />
+                  <path d="M300 130 Q315 115 330 130 Q315 145 300 130 Z" fill="#86efac" />
+                </g>
+
+                {/* Grande feuille centrale */}
+                <g transform="translate(200 250)">
+                  <path
+                    d="M0 -140 C 80 -120, 120 -40, 90 40 C 65 105, 0 140, 0 140 C 0 140, -65 105, -90 40 C -120 -40, -80 -120, 0 -140 Z"
+                    fill="url(#leafGrad)"
+                  />
+                  {/* Nervure centrale */}
+                  <path d="M0 -125 L0 130" stroke="#0a1f11" strokeOpacity="0.25" strokeWidth="4" strokeLinecap="round" />
+                  {/* Nervures latérales */}
+                  <path d="M0 -70 L45 -35" stroke="#0a1f11" strokeOpacity="0.2" strokeWidth="3" strokeLinecap="round" />
+                  <path d="M0 -70 L-45 -35" stroke="#0a1f11" strokeOpacity="0.2" strokeWidth="3" strokeLinecap="round" />
+                  <path d="M0 -10 L50 25" stroke="#0a1f11" strokeOpacity="0.2" strokeWidth="3" strokeLinecap="round" />
+                  <path d="M0 -10 L-50 25" stroke="#0a1f11" strokeOpacity="0.2" strokeWidth="3" strokeLinecap="round" />
+                  <path d="M0 50 L40 80" stroke="#0a1f11" strokeOpacity="0.2" strokeWidth="3" strokeLinecap="round" />
+                  <path d="M0 50 L-40 80" stroke="#0a1f11" strokeOpacity="0.2" strokeWidth="3" strokeLinecap="round" />
+                </g>
+
+                {/* Anneau de scan IA */}
+                <circle cx="200" cy="250" r="150" fill="none" stroke="#ffffff" strokeOpacity="0.25" strokeWidth="2" strokeDasharray="6 10" />
+
+                {/* Badge check flottant (résultat du diagnostic) */}
+                <g transform="translate(285 165)">
+                  <circle cx="0" cy="0" r="34" fill="#ffffff" />
+                  <circle cx="0" cy="0" r="34" fill="none" stroke="#22c55e" strokeWidth="3" />
+                  <path d="M-13 0 L-3 11 L15 -10" fill="none" stroke="#1a5c2a" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+                </g>
+              </svg>
               {/* Floating Badge */}
               <div className="absolute -bottom-6 -left-6 z-20 bg-white p-4 rounded-2xl shadow-xl flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#e8f5e9]">
