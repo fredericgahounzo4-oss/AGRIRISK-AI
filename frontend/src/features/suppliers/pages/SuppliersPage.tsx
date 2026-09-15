@@ -91,9 +91,9 @@ export function SuppliersPage() {
       </div>
 
       {/* Carte + Liste */}
-      <div className="grid lg:grid-cols-3 gap-5 h-[520px]">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:h-[520px]">
         {/* Carte Leaflet */}
-        <div className="lg:col-span-2 rounded-2xl overflow-hidden border border-[#e2e8e4] shadow-sm">
+        <div className="lg:col-span-2 h-[320px] lg:h-auto rounded-2xl overflow-hidden border border-[#e2e8e4] shadow-sm">
           <MapContainer center={[5.34, -4.03]} zoom={12} style={{ height: '100%', width: '100%' }}>
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -118,7 +118,7 @@ export function SuppliersPage() {
         </div>
 
         {/* Liste fournisseurs */}
-        <Card padding="none" className="flex flex-col overflow-hidden">
+        <Card padding="none" className="flex flex-col h-[400px] lg:h-auto overflow-hidden">
           <div className="overflow-y-auto flex-1 divide-y divide-[#e2e8e4]">
             {filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center px-4">
