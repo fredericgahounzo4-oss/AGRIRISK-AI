@@ -38,6 +38,9 @@ class User(AbstractUser):
     company = models.CharField(max_length=150, blank=True, null=True)
     category = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, default="")
+    address = models.CharField(max_length=255, blank=True, default="")
+    lat = models.FloatField(blank=True, null=True)
+    lng = models.FloatField(blank=True, null=True)
 
     # Préférences (page Paramètres)
     language = models.CharField(max_length=10, default="fr")
@@ -83,6 +86,38 @@ class User(AbstractUser):
         base["status"] = self.status
         base["diagnostics"] = self.diagnostics.count()
         return base
+
+    def to_supplier_dict(self, viewer=None):
+        """
+        Format utilisé par la Carte des Fournisseurs (agriculteur).
+        `viewer` est l'utilisateur (agriculteur) qui consulte la carte,
+        utilisé pour calculer une distance approximative.
+        """
+        from .geo import haversine_km, resolve_coordinates
+
+        lat, lng = self.lat, self.lng
+        if lat is None or lng is None:
+            lat, lng = resolve_coordinates(self.region, str(self.id))
+
+        distance = 0.0
+        if viewer is not None:
+            v_lat, v_lng = viewer.lat, viewer.lng
+            if v_lat is None or v_lng is None:
+                v_lat, v_lng = resolve_coordinates(viewer.region, str(viewer.id))
+            distance = haversine_km(v_lat, v_lng, lat, lng)
+
+        return {
+            "id": str(self.id),
+            "name": self.company or self.name,
+            "category": self.category or "Autre",
+            "distance": distance,
+            "rating": 0,
+            "reviews_count": 0,
+            "address": self.address or self.region or "",
+            "phone": self.phone,
+            "lat": lat,
+            "lng": lng,
+        }
 
 
 class PasswordResetToken(models.Model):

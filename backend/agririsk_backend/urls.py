@@ -7,11 +7,18 @@ from chat import views as chat_views
 from diagnostics import views as diagnostics_views
 from marketplace import views as marketplace_views
 from notifications import views as notification_views
+from accounts import views as accounts_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/auth/", include("accounts.urls")),
     path("api/admin/", include("adminpanel.urls")),
+
+    # Carte des Fournisseurs (agriculteur) — routes déclarées ici (et non
+    # sous api/auth/) pour matcher exactement /api/suppliers attendu par
+    # le frontend (src/features/suppliers/api/suppliersApi.ts).
+    path("api/suppliers", accounts_views.SuppliersListView.as_view(), name="suppliers-list"),
+    path("api/suppliers/<uuid:pk>", accounts_views.SupplierDetailView.as_view(), name="suppliers-detail"),
 
     # Diagnostics — routes déclarées directement ici pour matcher exactement
     # les URL sans slash final attendues par le frontend (src/services/api.ts).
