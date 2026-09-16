@@ -24,6 +24,7 @@ import { AboutPage }           from '@/features/public/pages/AboutPage';
 import { FAQPage }             from '@/features/public/pages/FAQPage';
 import { ContactPage }         from '@/features/public/pages/ContactPage';
 import { BlogPage }            from '@/features/public/pages/BlogPage';
+import { BlogPostPage }        from '@/features/public/pages/BlogPostPage';
 
 // ─── Farmer pages ────────────────────────────────────────────────────────────
 import { DashboardPage }       from '@/features/dashboard/pages/DashboardPage';
@@ -66,6 +67,7 @@ export const router = createBrowserRouter([
       { path: 'faq',                   element: <FAQPage />             },
       { path: 'contact',               element: <ContactPage />         },
       { path: 'blog',                  element: <BlogPage />            },
+      { path: 'blog/:slug',            element: <BlogPostPage />        },
     ],
   },
 
