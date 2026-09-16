@@ -1,23 +1,46 @@
-import { Leaf, CheckCircle } from 'lucide-react';
+import { Leaf, CheckCircle, Microscope, MessageCircle, Network } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+
+function FeatureIllustration({ icon: Icon, gradientId }: { icon: LucideIcon; gradientId: string }) {
+  return (
+    <svg viewBox="0 0 500 400" role="img" className="relative z-10 rounded-3xl shadow-xl w-full h-[400px]">
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#e8f5e9" />
+          <stop offset="100%" stopColor="#c8e6c9" />
+        </linearGradient>
+      </defs>
+      <rect width="500" height="400" rx="24" fill={`url(#${gradientId})`} />
+      <circle cx="60" cy="340" r="70" fill="#1a5c2a" opacity="0.06" />
+      <circle cx="440" cy="60" r="90" fill="#1a5c2a" opacity="0.06" />
+      <circle cx="250" cy="200" r="90" fill="#ffffff" />
+      <foreignObject x="200" y="150" width="100" height="100">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+          <Icon size={56} color="#1a5c2a" strokeWidth={1.5} />
+        </div>
+      </foreignObject>
+    </svg>
+  );
+}
 
 export function FeaturesPage() {
   const features = [
     {
       title: "Diagnostic Phytosanitaire et Animal",
       desc: "Grâce à notre modèle d'Intelligence Artificielle entraîné sur des milliers d'images, détectez instantanément les maladies de vos cultures et de vos animaux. Recevez un rapport détaillé avec le niveau de risque et les traitements recommandés.",
-      image: "https://images.unsplash.com/photo-1628102491629-77858ab57fa4?auto=format&fit=crop&q=80&w=600",
+      icon: Microscope,
       points: ["Analyse instantanée par photo", "Précision de 95%", "Recommandations de traitements locaux"]
     },
     {
       title: "Assistant Agronome Virtuel",
       desc: "Posez toutes vos questions à notre assistant conversationnel spécialisé en agriculture africaine. De la préparation du sol à la récolte, obtenez des conseils adaptés à votre région et à vos cultures.",
-      image: "https://images.unsplash.com/photo-1595841696677-6489ff3f8cd1?auto=format&fit=crop&q=80&w=600",
+      icon: MessageCircle,
       points: ["Disponible 24h/24 et 7j/7", "Conseils personnalisés", "Historique de vos conversations"]
     },
     {
       title: "Mise en relation B2B",
       desc: "Accédez à un vaste réseau de fournisseurs certifiés. Comparez les produits, consultez les avis et trouvez les intrants agricoles les plus proches de votre exploitation grâce à notre carte interactive.",
-      image: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=600",
+      icon: Network,
       points: ["Fournisseurs vérifiés", "Géolocalisation précise", "Demandes de devis en ligne"]
     }
   ];
@@ -51,7 +74,7 @@ export function FeaturesPage() {
               </div>
               <div className="flex-1 relative">
                 <div className="absolute inset-0 bg-[#22c55e] rounded-3xl translate-x-4 translate-y-4 opacity-20"></div>
-                <img src={feat.image} alt={feat.title} className="relative z-10 rounded-3xl shadow-xl w-full h-[400px] object-cover" />
+                <FeatureIllustration icon={feat.icon} gradientId={`feature-grad-${idx}`} />
               </div>
             </div>
           ))}

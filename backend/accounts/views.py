@@ -232,10 +232,12 @@ User = get_user_model()
 class SuppliersListView(APIView):
     """
     GET /api/suppliers — annuaire des fournisseurs pour la Carte des
-    Fournisseurs (agriculteur). Filtre optionnel ?category=Semences.
+    Fournisseurs (agriculteur connecté) ET pour l'annuaire public
+    (page /fournisseurs-publics, sans connexion). Filtre optionnel
+    ?category=Semences.
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         suppliers = User.objects.filter(role=User.Role.SUPPLIER, status=User.Status.ACTIVE)
@@ -244,7 +246,8 @@ class SuppliersListView(APIView):
         if category and category != "Tous":
             suppliers = suppliers.filter(category=category)
 
-        data = [s.to_supplier_dict(viewer=request.user) for s in suppliers]
+        viewer = request.user if request.user.is_authenticated else None
+        data = [s.to_supplier_dict(viewer=viewer) for s in suppliers]
         data.sort(key=lambda s: s["distance"])
         return Response(data)
 
@@ -252,8 +255,9 @@ class SuppliersListView(APIView):
 class SupplierDetailView(APIView):
     """GET /api/suppliers/<id> — fiche détaillée d'un fournisseur."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request, pk):
         supplier = get_object_or_404(User, pk=pk, role=User.Role.SUPPLIER, status=User.Status.ACTIVE)
-        return Response(supplier.to_supplier_dict(viewer=request.user))
+        viewer = request.user if request.user.is_authenticated else None
+        return Response(supplier.to_supplier_dict(viewer=viewer))
