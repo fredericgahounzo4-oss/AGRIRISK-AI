@@ -181,6 +181,30 @@ CORS_ALLOW_CREDENTIALS = True
 
 
 # ------------------------------------------------------------------
+# Marketplace & paiement FedaPay (Mobile Money + carte)
+# ------------------------------------------------------------------
+# Clés : tableau de bord FedaPay → Paramètres → Clés API. En sandbox, la clé
+# secrète commence par "sk_sandbox_", en production par "sk_live_".
+FEDAPAY_SECRET_KEY = os.environ.get("FEDAPAY_SECRET_KEY", "")
+FEDAPAY_ENV = os.environ.get("FEDAPAY_ENV", "sandbox")  # "sandbox" ou "live"
+# Clé secrète du webhook (tableau de bord FedaPay → Webhooks → "wh_...").
+FEDAPAY_WEBHOOK_SECRET = os.environ.get("FEDAPAY_WEBHOOK_SECRET", "")
+
+# URL publique du frontend (FedaPay y renvoie l'acheteur après le paiement).
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "")
+
+# Commission prélevée par AgriRisk sur chaque vente (en %, déduite du fournisseur).
+MARKETPLACE_COMMISSION_PERCENT = float(os.environ.get("MARKETPLACE_COMMISSION_PERCENT", "5"))
+MARKETPLACE_MIN_ORDER_AMOUNT = int(os.environ.get("MARKETPLACE_MIN_ORDER_AMOUNT", "100"))
+# Délai avant annulation automatique d'une commande impayée (le stock est libéré).
+ORDER_EXPIRY_MINUTES = int(os.environ.get("ORDER_EXPIRY_MINUTES", "30"))
+
+# Mode simulation : permet de tester tout le parcours SANS clé FedaPay, en
+# local uniquement. Actif seulement si DEBUG=true et qu'aucune clé n'est définie.
+PAYMENT_SIMULATION = DEBUG and not FEDAPAY_SECRET_KEY
+
+
+# ------------------------------------------------------------------
 # Email — en développement, les emails s'affichent simplement dans la console
 # ------------------------------------------------------------------
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

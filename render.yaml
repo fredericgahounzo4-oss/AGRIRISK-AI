@@ -24,6 +24,17 @@ services:
         sync: false   # à définir manuellement (clé console.groq.com, "gsk_...")
       - key: CLOUDINARY_URL
         sync: false   # à coller : cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+      # --- Paiement FedaPay ---
+      - key: FEDAPAY_SECRET_KEY
+        sync: false   # clé secrète FedaPay ("sk_sandbox_..." ou "sk_live_...")
+      - key: FEDAPAY_ENV
+        value: sandbox   # passer à "live" quand le compte FedaPay est validé
+      - key: FEDAPAY_WEBHOOK_SECRET
+        sync: false   # clé du webhook FedaPay ("wh_...")
+      - key: FRONTEND_URL
+        sync: false   # URL du frontend Render, ex: https://agririsk-frontend.onrender.com
+      - key: MARKETPLACE_COMMISSION_PERCENT
+        value: "5"
 
   # --- Frontend Vite (site statique) ---
   - type: web

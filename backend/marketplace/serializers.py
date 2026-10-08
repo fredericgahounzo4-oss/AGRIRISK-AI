@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Product, ProductRequest
+from .models import PayoutAccount, Product, ProductRequest
 
 
 class ProductWriteSerializer(serializers.ModelSerializer):
@@ -29,3 +29,37 @@ class CreateProductRequestSerializer(serializers.Serializer):
     product_id = serializers.UUIDField()
     quantity = serializers.IntegerField(min_value=1)
     phone = serializers.CharField(max_length=30, required=False, allow_blank=True)
+
+
+class OrderItemInputSerializer(serializers.Serializer):
+    product_id = serializers.UUIDField()
+    quantity = serializers.IntegerField(min_value=1, max_value=10000)
+
+
+class CreateOrderSerializer(serializers.Serializer):
+    items = OrderItemInputSerializer(many=True, allow_empty=False)
+    delivery_method = serializers.ChoiceField(choices=["pickup", "delivery"], default="pickup")
+    delivery_address = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    phone = serializers.CharField(max_length=30, required=False, allow_blank=True)
+    note = serializers.CharField(max_length=500, required=False, allow_blank=True)
+
+    def validate(self, attrs):
+        if attrs.get("delivery_method") == "delivery" and not attrs.get("delivery_address", "").strip():
+            raise serializers.ValidationError({"delivery_address": "L'adresse de livraison est requise."})
+        return attrs
+
+
+class SupplierOrderStatusSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=["preparing", "shipped", "cancelled"])
+
+
+class PayoutAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PayoutAccount
+        fields = ["operator", "phone", "account_name"]
+
+    def validate_phone(self, value):
+        digits = "".join(ch for ch in value if ch.isdigit())
+        if len(digits) < 8:
+            raise serializers.ValidationError("Numéro de téléphone invalide.")
+        return value.strip()

@@ -38,10 +38,10 @@ export function FeaturesPage() {
       points: ["Disponible 24h/24 et 7j/7", "Conseils personnalisés", "Historique de vos conversations"]
     },
     {
-      title: "Mise en relation B2B",
-      desc: "Accédez à un vaste réseau de fournisseurs certifiés. Comparez les produits, consultez les avis et trouvez les intrants agricoles les plus proches de votre exploitation grâce à notre carte interactive.",
+      title: "Marketplace & paiement Mobile Money",
+      desc: "Commandez vos intrants directement auprès de fournisseurs vérifiés et payez en toute sécurité par Mobile Money (T-Money, Flooz, MTN, Moov) ou carte. Le fournisseur n'est payé qu'une fois votre commande reçue.",
       icon: Network,
-      points: ["Fournisseurs vérifiés", "Géolocalisation précise", "Demandes de devis en ligne"]
+      points: ["Fournisseurs vérifiés", "Paiement Mobile Money sécurisé (FedaPay)", "Suivi de commande jusqu'à la livraison"]
     }
   ];
 

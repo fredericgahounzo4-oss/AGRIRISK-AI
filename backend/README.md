@@ -155,3 +155,25 @@ curl -X POST http://127.0.0.1:8000/api/diagnostics \
 Ce backend couvre l'authentification, le profil, le diagnostic IA et
 l'assistant IA. Les sections encore en mode mock côté frontend (produits,
 fournisseurs) peuvent être migrées de la même façon si besoin.
+
+
+## Marketplace : commandes & paiement FedaPay
+
+| Méthode | Route | Rôle |
+|---|---|---|
+| GET | `/api/marketplace/catalog` | Produits en vente (agriculteur) — `?search=&category=&supplier_id=` |
+| GET | `/api/marketplace/orders` | Mes commandes (acheteur) ou commandes payées reçues (fournisseur) |
+| POST | `/api/marketplace/orders` | Crée la commande (1 fournisseur) + lance le paiement → `{order, payment_url}` |
+| GET | `/api/marketplace/orders/<id>` | Détail (acheteur, fournisseur ou admin) |
+| POST | `/api/marketplace/orders/<id>/pay` | Relance le paiement d'une commande en attente |
+| POST | `/api/marketplace/orders/<id>/verify-payment` | Relit le statut chez FedaPay (page de retour) |
+| POST | `/api/marketplace/orders/<id>/cancel` | Annule une commande non payée (libère le stock) |
+| POST | `/api/marketplace/orders/<id>/confirm-delivery` | L'acheteur confirme la réception (libère le reversement) |
+| POST | `/api/marketplace/orders/<id>/status` | Fournisseur : `preparing` / `shipped` / `cancelled` |
+| POST | `/api/marketplace/webhooks/fedapay` | Webhook FedaPay (signature `X-FEDAPAY-SIGNATURE` + relecture API) |
+| GET | `/api/marketplace/earnings` | Synthèse des revenus du fournisseur |
+| GET/PUT | `/api/marketplace/payout-account` | Numéro Mobile Money de reversement |
+
+Modèles : `Order`, `OrderItem` (prix figés), `Payment` (une ligne par tentative FedaPay),
+`PayoutAccount`. Logique métier dans `marketplace/services.py`, client FedaPay dans
+`marketplace/fedapay.py`.

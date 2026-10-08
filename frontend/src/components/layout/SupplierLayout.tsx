@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink, useNavigate, Link, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, Building2, Package, ClipboardList,
-  BarChart3, Settings, LogOut, Leaf, ChevronRight, Menu
+  BarChart3, Settings, LogOut, Leaf, ChevronRight, Menu, ShoppingBag, Wallet
 } from 'lucide-react';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useTranslation } from '@/lib/i18n/I18nContext';
@@ -13,7 +13,9 @@ const navItems = [
   { to: '/fournisseur/tableau-de-bord', icon: LayoutDashboard, labelKey: 'sidebar.dashboard' },
   { to: '/fournisseur/profil-entreprise', icon: Building2,     labelKey: 'sidebar.companyProfile' },
   { to: '/fournisseur/produits',          icon: Package,       labelKey: 'sidebar.products'          },
+  { to: '/fournisseur/commandes',         icon: ShoppingBag,   labelKey: 'sidebar.supplierOrders'    },
   { to: '/fournisseur/demandes',          icon: ClipboardList, labelKey: 'sidebar.requests'          },
+  { to: '/fournisseur/revenus',           icon: Wallet,        labelKey: 'sidebar.earnings'          },
   { to: '/fournisseur/statistiques',      icon: BarChart3,     labelKey: 'sidebar.stats'      },
   { to: '/fournisseur/parametres',        icon: Settings,      labelKey: 'sidebar.settings'        },
 ];

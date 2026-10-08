@@ -38,6 +38,20 @@ urlpatterns = [
     path("api/marketplace/requests/create", marketplace_views.CreateRequestView.as_view(), name="requests-create"),
     path("api/marketplace/requests/<uuid:pk>/<str:action>", marketplace_views.RequestActionView.as_view(), name="requests-action"),
 
+    # Marketplace : catalogue, commandes, paiement FedaPay
+    path("api/marketplace/catalog", marketplace_views.CatalogView.as_view(), name="catalog"),
+    path("api/marketplace/orders", marketplace_views.OrderListCreateView.as_view(), name="orders-list-create"),
+    path("api/marketplace/orders/<uuid:pk>", marketplace_views.OrderDetailView.as_view(), name="orders-detail"),
+    path("api/marketplace/orders/<uuid:pk>/pay", marketplace_views.OrderPayView.as_view(), name="orders-pay"),
+    path("api/marketplace/orders/<uuid:pk>/verify-payment", marketplace_views.OrderVerifyPaymentView.as_view(), name="orders-verify-payment"),
+    path("api/marketplace/orders/<uuid:pk>/cancel", marketplace_views.OrderCancelView.as_view(), name="orders-cancel"),
+    path("api/marketplace/orders/<uuid:pk>/confirm-delivery", marketplace_views.OrderConfirmDeliveryView.as_view(), name="orders-confirm-delivery"),
+    path("api/marketplace/orders/<uuid:pk>/status", marketplace_views.OrderSupplierStatusView.as_view(), name="orders-supplier-status"),
+    path("api/marketplace/orders/<uuid:pk>/simulate-payment", marketplace_views.OrderSimulatePaymentView.as_view(), name="orders-simulate-payment"),
+    path("api/marketplace/webhooks/fedapay", marketplace_views.FedaPayWebhookView.as_view(), name="fedapay-webhook"),
+    path("api/marketplace/earnings", marketplace_views.EarningsView.as_view(), name="earnings"),
+    path("api/marketplace/payout-account", marketplace_views.PayoutAccountView.as_view(), name="payout-account"),
+
     # Notifications
     path("api/notifications", notification_views.NotificationListView.as_view(), name="notifications-list"),
     path("api/notifications/read-all", notification_views.NotificationMarkAllReadView.as_view(), name="notifications-read-all"),

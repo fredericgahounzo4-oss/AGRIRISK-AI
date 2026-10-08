@@ -32,6 +32,12 @@ import { DiagnosticPage }      from '@/features/diagnostic/pages/DiagnosticPage'
 import { DiagnosticResultPage }from '@/features/diagnostic/pages/DiagnosticResultPage';
 import { AssistantPage }       from '@/features/assistant/pages/AssistantPage';
 import { SuppliersPage }       from '@/features/suppliers/pages/SuppliersPage';
+import { ShopPage }            from '@/features/shop/pages/ShopPage';
+import { CartPage }            from '@/features/shop/pages/CartPage';
+import { MyOrdersPage }        from '@/features/shop/pages/MyOrdersPage';
+import { OrderDetailPage }     from '@/features/shop/pages/OrderDetailPage';
+import { PaymentReturnPage }   from '@/features/shop/pages/PaymentReturnPage';
+import { PaymentSimulationPage } from '@/features/shop/pages/PaymentSimulationPage';
 import { HistoryPage }         from '@/features/farmer/pages/HistoryPage';
 import { ProfilePage }         from '@/features/farmer/pages/ProfilePage';
 import { SettingsPage }        from '@/features/farmer/pages/SettingsPage';
@@ -41,6 +47,8 @@ import { SupplierDashboardPage } from '@/features/supplier/pages/SupplierDashboa
 import { CompanyProfilePage }    from '@/features/supplier/pages/CompanyProfilePage';
 import { ProductsPage }          from '@/features/supplier/pages/ProductsPage';
 import { RequestsPage }          from '@/features/supplier/pages/RequestsPage';
+import { OrdersPage }            from '@/features/supplier/pages/OrdersPage';
+import { EarningsPage }          from '@/features/supplier/pages/EarningsPage';
 import { StatisticsPage }        from '@/features/supplier/pages/StatisticsPage';
 import { SupplierSettingsPage }  from '@/features/supplier/pages/SupplierSettingsPage';
 
@@ -90,6 +98,12 @@ export const router = createBrowserRouter([
       { path: 'diagnostic/resultat/:id', element: <DiagnosticResultPage /> },
       { path: 'assistant',               element: <AssistantPage />        },
       { path: 'fournisseurs',            element: <SuppliersPage />        },
+      { path: 'boutique',                element: <ShopPage />             },
+      { path: 'panier',                  element: <CartPage />             },
+      { path: 'commandes',               element: <MyOrdersPage />         },
+      { path: 'commandes/:id',           element: <OrderDetailPage />      },
+      { path: 'paiement/retour',         element: <PaymentReturnPage />    },
+      { path: 'paiement/simulation',     element: <PaymentSimulationPage /> },
       { path: 'historique',              element: <HistoryPage />          },
       { path: 'profil',                  element: <ProfilePage />          },
       { path: 'parametres',              element: <SettingsPage />         },
@@ -106,6 +120,8 @@ export const router = createBrowserRouter([
       { path: 'profil-entreprise',element: <CompanyProfilePage />   },
       { path: 'produits',         element: <ProductsPage />         },
       { path: 'demandes',         element: <RequestsPage />         },
+      { path: 'commandes',        element: <OrdersPage />           },
+      { path: 'revenus',          element: <EarningsPage />         },
       { path: 'statistiques',     element: <StatisticsPage />       },
       { path: 'parametres',       element: <SupplierSettingsPage /> },
     ],

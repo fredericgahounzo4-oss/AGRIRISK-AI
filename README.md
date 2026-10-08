@@ -74,6 +74,57 @@ npm run dev
   système de paiement (Stripe ou équivalent) non présent dans ce projet.
 - ⏳ Toggles de préférences de notifications (visuels, pas encore sauvegardés).
 
+## Marketplace & paiement Mobile Money (FedaPay)
+
+Le côté fournisseur n'est plus seulement de la mise en relation : c'est une
+vraie **marketplace**.
+
+**Parcours agriculteur** : Boutique → Panier → Paiement FedaPay (T-Money, Flooz,
+MTN, Moov ou carte) → Suivi dans « Mes commandes » → « J'ai bien reçu ma commande ».
+
+**Parcours fournisseur** : une commande n'apparaît dans « Commandes » qu'une fois
+**payée** → Préparer → Expédier / Prête pour retrait → après la confirmation du
+client, la somme (prix − commission) devient « À recevoir » dans « Revenus ».
+
+**Règles importantes**
+- Une commande = un fournisseur (le panier se règle fournisseur par fournisseur).
+- Le stock est **réservé** à la commande et **remis en vente** si le paiement échoue,
+  si l'acheteur annule, ou après 30 min sans paiement (`ORDER_EXPIRY_MINUTES`).
+- Le statut d'un paiement n'est **jamais cru** sur parole : le backend relit toujours
+  la transaction chez FedaPay (page de retour **et** webhook).
+- Commission AgriRisk : `MARKETPLACE_COMMISSION_PERCENT` (5 % par défaut), déduite du
+  fournisseur — l'agriculteur paie exactement le prix affiché.
+- Le fournisseur est payé **après** la confirmation de réception (système de séquestre).
+  Le reversement est **manuel** : dans l'admin Django → *Orders*, filtrez
+  `payout_status = À reverser`, envoyez l'argent au numéro Mobile Money du fournisseur
+  (visible dans *Payout accounts*), puis appliquez l'action
+  « Marquer le reversement comme effectué ».
+- Annulation par le fournisseur d'une commande déjà payée (ou paiement reçu après
+  annulation) → `refund_status = Remboursement à faire`. Remboursez depuis le tableau
+  de bord FedaPay puis appliquez l'action « Marquer le remboursement comme effectué ».
+
+### Tester en local SANS compte FedaPay
+Laissez `FEDAPAY_SECRET_KEY` vide dans `backend/.env` avec `DJANGO_DEBUG=true` :
+le paiement est **simulé** (une page vous laisse choisir « réussi » ou « refusé »).
+Ce mode est désactivé automatiquement en production.
+
+### Brancher le vrai FedaPay
+1. Créez un compte sur https://fedapay.com (mode **Sandbox** d'abord).
+2. *Paramètres → Clés API* : copiez la clé secrète dans `FEDAPAY_SECRET_KEY`
+   (`sk_sandbox_...`), gardez `FEDAPAY_ENV=sandbox`.
+3. Mettez `FRONTEND_URL` à l'adresse publique du frontend (FedaPay y renvoie l'acheteur).
+4. *Webhooks → Créer* : URL `https://VOTRE-BACKEND/api/marketplace/webhooks/fedapay`
+   (HTTPS obligatoire, événements `transaction.*`), puis copiez la clé du webhook
+   dans `FEDAPAY_WEBHOOK_SECRET`. (Même sans webhook, la page de retour confirme le
+   paiement ; le webhook sert de filet de sécurité si l'acheteur ferme son navigateur.)
+5. Testez avec les numéros de test de la documentation FedaPay, puis passez
+   `FEDAPAY_ENV=live` avec votre clé `sk_live_...` une fois le compte validé.
+
+> ⚠️ Après mise à jour : `python manage.py migrate` (nouvelle migration `marketplace/0002`).
+> Ne mettez jamais la clé secrète FedaPay dans le frontend ni dans Git.
+
+Lancer les tests du paiement : `cd backend && python manage.py test marketplace`
+
 ## Si une erreur persiste
 
 1. **Le backend n'est pas lancé** → relance `python manage.py runserver 8000`
