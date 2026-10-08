@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Loader } from '@/components/ui/Loader';
-import { Plus, Search, Filter, Edit, Trash2, X } from 'lucide-react';
+import { Plus, Search, Filter, Edit, Trash2, X, ImagePlus } from 'lucide-react';
+import toast from 'react-hot-toast';
 import {
   useProducts,
   useCreateProduct,
@@ -20,6 +21,9 @@ type ProductFormState = {
   status: Product['status'];
   sku: string;
 };
+
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 Mo
 
 const emptyForm: ProductFormState = {
   name: '',
@@ -40,6 +44,38 @@ export function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<ProductFormState>(emptyForm);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  // Libère l'URL d'aperçu quand elle change ou à la fermeture du composant
+  useEffect(() => {
+    return () => {
+      if (imagePreview && imagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // permet de re-sélectionner le même fichier
+    if (!file) return;
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      toast.error('Format non supporté. Utilisez JPG, PNG ou WebP.');
+      return;
+    }
+    if (file.size > MAX_IMAGE_SIZE) {
+      toast.error('Image trop lourde (5 Mo maximum).');
+      return;
+    }
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const clearImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+  };
 
   const filtered = products.filter(
     (p) =>
@@ -50,6 +86,8 @@ export function ProductsPage() {
   const openCreateForm = () => {
     setEditingProduct(null);
     setForm(emptyForm);
+    setImageFile(null);
+    setImagePreview(null);
     setShowForm(true);
   };
 
@@ -63,6 +101,8 @@ export function ProductsPage() {
       status: product.status,
       sku: product.sku,
     });
+    setImageFile(null);
+    setImagePreview(product.image ?? null);
     setShowForm(true);
   };
 
@@ -80,6 +120,7 @@ export function ProductsPage() {
       stock: Number(form.stock) || 0,
       status: form.status,
       sku: form.sku,
+      ...(imageFile ? { image: imageFile } : {}),
     };
 
     if (editingProduct) {
@@ -289,6 +330,48 @@ export function ProductsPage() {
                   <option value="Rupture">Rupture</option>
                   <option value="Bientôt disponible">Bientôt disponible</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Photo du produit
+                </label>
+                {imagePreview ? (
+                  <div className="relative h-44 w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+                    <img src={imagePreview} alt="Aperçu du produit" className="h-full w-full object-cover" />
+                    <div className="absolute bottom-2 right-2 flex gap-2">
+                      <label className="cursor-pointer rounded-lg bg-white/95 px-3 py-1.5 text-xs font-semibold text-[#1a5c2a] shadow hover:bg-white">
+                        Changer
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          className="hidden"
+                          onChange={handleImageChange}
+                        />
+                      </label>
+                      {imageFile && (
+                        <button
+                          type="button"
+                          onClick={clearImage}
+                          className="rounded-lg bg-white/95 px-3 py-1.5 text-xs font-semibold text-red-600 shadow hover:bg-white"
+                        >
+                          Retirer
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 px-4 py-8 text-center transition-colors hover:border-[#1a5c2a] hover:bg-[#e8f5e9]/50">
+                    <ImagePlus className="h-7 w-7 text-[#1a5c2a]" />
+                    <span className="text-sm font-medium text-gray-700">Ajouter une photo</span>
+                    <span className="text-xs text-gray-400">JPG, PNG ou WebP · 5 Mo max</span>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={handleImageChange}
+                    />
+                  </label>
+                )}
               </div>
               <div className="flex gap-3 pt-2">
                 <Button type="submit" loading={isSaving} className="flex-1">
