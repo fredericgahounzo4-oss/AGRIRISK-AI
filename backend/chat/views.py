@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ai_client.gemini_client import AIConfigError, AIRequestError
+from ai_client.groq_client import AIConfigError, AIRequestError
 
 from .models import Conversation, Message
 from .serializers import SendMessageSerializer
@@ -43,7 +43,7 @@ class SendMessageView(APIView):
     """
     POST /api/conversations/messages
     Crée la conversation si besoin, enregistre le message utilisateur,
-    appelle la vraie IA (Gemini) et enregistre + renvoie sa réponse.
+    appelle la vraie IA (Groq) et enregistre + renvoie sa réponse.
     """
 
     permission_classes = [IsAuthenticated]

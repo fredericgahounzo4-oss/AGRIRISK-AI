@@ -26,25 +26,22 @@ python manage.py migrate
 python manage.py runserver 8000
 ```
 
-### 2. Clé API Google Gemini — OBLIGATOIRE pour le Diagnostic IA et l'Assistant IA
+### 2. Clé API Groq — OBLIGATOIRE pour le Diagnostic IA et l'Assistant IA
 
 Le **Diagnostic IA** (analyse de photo) et l'**Assistant IA** (chat) utilisent
-la vraie API Google Gemini. Sans clé configurée, ces deux fonctionnalités
-renverront une erreur claire ("GEMINI_API_KEY n'est pas configurée") mais
+la vraie API Groq. Sans clé configurée, ces deux fonctionnalités
+renverront une erreur claire ("GROQ_API_KEY n'est pas configurée") mais
 resteront fonctionnelles pour le reste (profil, historique vide, etc.).
 
-1. Allez sur https://aistudio.google.com/apikey (connexion avec un compte Google)
-2. Cliquez sur "Create API key" — la clé générée ressemble à `AIzaSy...`
+1. Allez sur https://console.groq.com/keys (créez un compte gratuit si besoin)
+2. Cliquez sur "Create API Key" — la clé générée ressemble à `gsk_...`
 3. Ouvrez `backend/.env` et complétez :
    ```
-   GEMINI_API_KEY=AIzaSy-votre-clé-ici
+   GROQ_API_KEY=gsk_votre-clé-ici
    ```
 4. Redémarrez le serveur Django (`Ctrl+C` puis `python manage.py runserver 8000`)
 
-⚠️ Utilisez bien une **clé API** (`AIzaSy...`), pas un jeton OAuth temporaire
-(souvent de la forme `ya29....` ou `AQ....`) : ce dernier expire après une
-heure environ et cessera de fonctionner. Gemini propose un [niveau gratuit](https://ai.google.dev/pricing)
-avec des limites de requêtes ; au-delà, la consommation est facturée.
+Groq propose un [niveau gratuit](https://console.groq.com/docs/rate-limits) avec des limites de requêtes par minute/jour.
 
 ### 3. Frontend React (terminal n°2, nouveau terminal)
 
@@ -61,10 +58,10 @@ npm run dev
 - ✅ Inscription / Connexion (agriculteur, fournisseur)
 - ✅ Profil : modification des infos, photo de profil, changement de mot de passe
 - ✅ Langue / Pays (sauvegardés sur le compte)
-- ✅ Diagnostic IA : upload d'image → vraie analyse par Gemini → résultat structuré
+- ✅ Diagnostic IA : upload d'image → vraie analyse par Groq → résultat structuré
 - ✅ Rapport PDF téléchargeable pour chaque diagnostic
 - ✅ Historique des diagnostics (vraies données, plus de données factices)
-- ✅ Assistant IA : conversation en temps réel avec Gemini, historique de conversations
+- ✅ Assistant IA : conversation en temps réel avec Groq, historique de conversations
 - ✅ **Fournisseur** — Profil entreprise : modification et sauvegarde réelles
 - ✅ **Fournisseur** — Produits : ajout, modification, suppression (catalogue réel)
 - ✅ **Fournisseur** — Demandes : accepter / refuser / voir détails (données réelles)
@@ -81,7 +78,7 @@ npm run dev
 
 1. **Le backend n'est pas lancé** → relance `python manage.py runserver 8000`
    dans le dossier `backend`.
-2. **"GEMINI_API_KEY n'est pas configurée"** → voir section 2 ci-dessus.
+2. **"GROQ_API_KEY n'est pas configurée"** → voir section 2 ci-dessus.
 3. **Le port 8000 est déjà utilisé** → change le port
    (`python manage.py runserver 8001`) et mets à jour
    `VITE_API_URL=http://localhost:8001/api` dans `AGRIRISK-AI/.env`.

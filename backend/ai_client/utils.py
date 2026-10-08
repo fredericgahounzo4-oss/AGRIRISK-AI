@@ -1,4 +1,4 @@
-"""Utilitaires indépendants du fournisseur d'IA (Anthropic, Gemini, ...)."""
+"""Utilitaires indépendants du fournisseur d'IA (Anthropic, Groq, ...)."""
 
 import json
 import re
