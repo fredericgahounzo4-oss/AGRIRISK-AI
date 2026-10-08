@@ -1,4 +1,4 @@
-from ai_client.gemini_client import call_gemini, image_to_inline_data
+from ai_client.groq_client import call_groq, image_to_image_part
 from ai_client.utils import extract_json
 
 VALID_RISK_LEVELS = {"Faible", "Moyen", "Élevé", "Critique"}
@@ -51,23 +51,23 @@ qu'un vétérinaire doit être consulté pour confirmer un diagnostic critique."
 
 def analyze_image(diagnostic_type: str, image_file) -> dict:
     """
-    Envoie l'image à l'API Gemini et renvoie un dict structuré + le texte brut.
-    Lève ai_client.gemini_client.AIConfigError / AIRequestError / ValueError en cas d'échec.
+    Envoie l'image à l'API Groq et renvoie un dict structuré + le texte brut.
+    Lève ai_client.groq_client.AIConfigError / AIRequestError / ValueError en cas d'échec.
     """
     system_prompt = CULTURE_SYSTEM_PROMPT if diagnostic_type == "culture" else ANIMAL_SYSTEM_PROMPT
 
-    image_part = image_to_inline_data(image_file)
+    image_part = image_to_image_part(image_file)
     messages = [
         {
             "role": "user",
             "content": [
                 image_part,
-                {"text": "Analyse cette image et réponds uniquement avec le JSON demandé."},
+                {"type": "text", "text": "Analyse cette image et réponds uniquement avec le JSON demandé."},
             ],
         }
     ]
 
-    raw_text = call_gemini(messages, system=system_prompt, max_tokens=1000)
+    raw_text = call_groq(messages, system=system_prompt, max_tokens=2000, json_mode=True)
     parsed = extract_json(raw_text)
 
     # Normalisation défensive du résultat renvoyé par le modèle.

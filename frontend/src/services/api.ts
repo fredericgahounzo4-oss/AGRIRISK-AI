@@ -7,7 +7,7 @@ export const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
   // Les endpoints IA (diagnostic, assistant) peuvent retenter plusieurs
-  // fois côté serveur en cas de surcharge Gemini (jusqu'à ~120s au total,
+  // fois côté serveur en cas de surcharge de l'API IA (jusqu'à ~120s au total,
   // cf. le timeout Gunicorn). Un timeout frontend trop court coupait la
   // requête et affichait une fausse "erreur réseau" alors que le serveur
   // était encore en train de travailler.

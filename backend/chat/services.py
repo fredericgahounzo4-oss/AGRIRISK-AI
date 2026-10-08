@@ -1,4 +1,4 @@
-from ai_client.gemini_client import call_gemini
+from ai_client.groq_client import call_groq
 
 SYSTEM_PROMPT = """Tu es l'Assistant IA d'AgriRisk AI, une application destinée aux \
 agriculteurs et éleveurs d'Afrique de l'Ouest (Togo et pays voisins). Tu réponds en \
@@ -15,7 +15,7 @@ vétérinaire local doit être consulté pour les décisions importantes."""
 
 def generate_reply(conversation, new_user_content: str) -> str:
     """
-    Construit l'historique de la conversation au format API et appelle Gemini.
+    Construit l'historique de la conversation au format API et appelle Groq.
     Le message utilisateur `new_user_content` est déjà enregistré en base par
     la vue avant l'appel à cette fonction : on ne fait donc que relire
     l'historique complet depuis la base, sans le rajouter une seconde fois.
@@ -28,7 +28,7 @@ def generate_reply(conversation, new_user_content: str) -> str:
         if m.role in ("user", "assistant")
     ]
 
-    return call_gemini(messages, system=SYSTEM_PROMPT, max_tokens=1200)
+    return call_groq(messages, system=SYSTEM_PROMPT, max_tokens=1200)
 
 
 def generate_title(first_message: str) -> str:

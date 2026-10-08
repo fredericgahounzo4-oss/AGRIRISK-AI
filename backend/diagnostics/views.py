@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ai_client.gemini_client import AIConfigError, AIRequestError
+from ai_client.groq_client import AIConfigError, AIRequestError
 from notifications.models import notify
 from adminpanel.models import ActivityLog, log_activity
 

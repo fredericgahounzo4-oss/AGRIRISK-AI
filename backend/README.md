@@ -1,8 +1,8 @@
 # AGRIRISK-AI — Backend Django
 
 Backend complet pour le frontend AGRIRISK-AI (React + Vite) : authentification,
-profil utilisateur, **Diagnostic IA** (analyse d'image via l'API Google Gemini) et
-**Assistant IA** (chat agricole via l'API Google Gemini).
+profil utilisateur, **Diagnostic IA** (analyse d'image via l'API Groq) et
+**Assistant IA** (chat agricole via l'API Groq).
 
 ## Routes disponibles
 
@@ -20,7 +20,7 @@ profil utilisateur, **Diagnostic IA** (analyse d'image via l'API Google Gemini) 
 | POST    | `/api/auth/forgot-password`  | Demande de réinitialisation        |
 | POST    | `/api/auth/reset-password`   | Réinitialisation du mot de passe   |
 
-### Diagnostic IA (`diagnostics`) — **nécessite GEMINI_API_KEY**
+### Diagnostic IA (`diagnostics`) — **nécessite GROQ_API_KEY**
 | Méthode | Route                              | Description                    |
 |---------|-------------------------------------|---------------------------------|
 | POST    | `/api/diagnostics`                 | Envoie une image, l'IA l'analyse et renvoie un diagnostic |
@@ -28,7 +28,7 @@ profil utilisateur, **Diagnostic IA** (analyse d'image via l'API Google Gemini) 
 | GET     | `/api/diagnostics/<id>`            | Détail d'un diagnostic          |
 | GET     | `/api/diagnostics/<id>/report`     | Rapport PDF téléchargeable      |
 
-### Assistant IA (`chat`) — **nécessite GEMINI_API_KEY**
+### Assistant IA (`chat`) — **nécessite GROQ_API_KEY**
 | Méthode | Route                                 | Description                  |
 |---------|-----------------------------------------|--------------------------------|
 | GET     | `/api/conversations`                   | Liste des conversations        |
@@ -88,13 +88,11 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Puis éditez `backend/.env` et renseignez votre clé API Google Gemini :
+Puis éditez `backend/.env` et renseignez votre clé API Groq :
 ```
-GEMINI_API_KEY=AIzaSy...
+GROQ_API_KEY=gsk_...
 ```
-→ Créez une clé (gratuite) sur **https://aistudio.google.com/apikey**. Une clé
-API stable ressemble à `AIzaSy...` ; un jeton OAuth temporaire (qui expire
-après ~1h) ne convient pas ici.
+→ Créez une clé (gratuite) sur **https://console.groq.com/keys**.
 Sans cette clé, le Diagnostic IA et l'Assistant IA renvoient une erreur claire
 (503) mais tout le reste de l'application (auth, profil, historique) fonctionne
 normalement.
@@ -127,12 +125,12 @@ VITE_MOCK_MODE=false
 
 - **Authentification** : token Bearer (`rest_framework.authtoken`), compatible
   avec l'intercepteur Axios du frontend.
-- **Diagnostic IA** : l'image est envoyée à l'API Google Gemini (vision) avec
+- **Diagnostic IA** : l'image est envoyée à l'API Groq (vision) avec
   un prompt spécialisé (phytopathologie pour les cultures, vétérinaire pour
   les animaux). La réponse JSON structurée du modèle est validée puis stockée
   en base (modèle `Diagnostic`).
 - **Assistant IA** : chaque message envoie l'historique complet de la
-  conversation à Gemini, avec un prompt système "assistant agricole Afrique de
+  conversation à Groq, avec un prompt système "assistant agricole Afrique de
   l'Ouest". Réponses en français.
 - **Rapport PDF** : généré à la volée avec `reportlab` (pas de fichier stocké).
 - **CORS** activé pour `http://localhost:5173`.

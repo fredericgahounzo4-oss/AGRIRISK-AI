@@ -20,8 +20,8 @@ services:
         value: "https://*.onrender.com"
       - key: DATABASE_URL
         sync: false   # à coller : la connection string Neon (postgresql://...)
-      - key: GEMINI_API_KEY
-        sync: false   # à définir manuellement (clé Google AI Studio)
+      - key: GROQ_API_KEY
+        sync: false   # à définir manuellement (clé console.groq.com, "gsk_...")
       - key: CLOUDINARY_URL
         sync: false   # à coller : cloudinary://API_KEY:API_SECRET@CLOUD_NAME
 
