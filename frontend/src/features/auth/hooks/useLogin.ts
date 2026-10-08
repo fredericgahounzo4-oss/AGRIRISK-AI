@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { authApi } from '../api/authApi';
 import { useAuthStore } from '../store/authStore';
 import type { LoginCredentials } from '../types';
+import { isMaintenanceError } from '@/lib/apiError';
 
 export function useLogin() {
   const { login } = useAuthStore();
@@ -19,7 +20,9 @@ export function useLogin() {
       else if (user.role === 'supplier') navigate('/fournisseur/tableau-de-bord', { replace: true });
       else navigate('/app/tableau-de-bord', { replace: true });
     },
-    onError: () => {
+    onError: (error) => {
+      // En maintenance, l'intercepteur redirige déjà vers /maintenance.
+      if (isMaintenanceError(error)) return;
       toast.error('Email ou mot de passe incorrect.');
     },
   });

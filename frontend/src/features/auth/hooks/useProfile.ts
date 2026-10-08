@@ -4,14 +4,14 @@ import { profileApi, type UpdateProfilePayload, type ChangePasswordPayload } fro
 import { useAuthStore } from '../store/authStore';
 import { getApiErrorMessage } from '@/lib/apiError';
 
-export function useUpdateProfile() {
+export function useUpdateProfile(options?: { successMessage?: string }) {
   const setUser = useAuthStore((s) => s.setUser);
 
   return useMutation({
     mutationFn: (payload: UpdateProfilePayload) => profileApi.update(payload),
     onSuccess: (user) => {
       setUser(user);
-      toast.success('Profil mis à jour avec succès.');
+      toast.success(options?.successMessage ?? 'Profil mis à jour avec succès.');
     },
     onError: (error) => {
       toast.error(getApiErrorMessage(error, 'Erreur lors de la mise à jour du profil.'));

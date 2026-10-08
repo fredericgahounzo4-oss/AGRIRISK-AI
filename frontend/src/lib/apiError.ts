@@ -23,3 +23,12 @@ export function getApiErrorMessage(error: unknown, fallback: string): string {
 
   return fallback;
 }
+
+/** Vrai si le serveur répond « 503 plateforme en maintenance ». */
+export function isMaintenanceError(error: unknown): boolean {
+  return (
+    error instanceof AxiosError &&
+    error.response?.status === 503 &&
+    error.response.data?.maintenance === true
+  );
+}

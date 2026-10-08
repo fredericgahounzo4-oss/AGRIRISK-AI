@@ -108,6 +108,7 @@ class RequestActionView(APIView):
                     body=f"{req.supplier.company or req.supplier.name} a accepté votre demande de {req.quantity}x {req.product_name}.",
                     icon="✅",
                     link="/app/fournisseurs",
+                    pref="notify_order_updates",
                 )
             else:
                 notify(
@@ -116,6 +117,7 @@ class RequestActionView(APIView):
                     body=f"{req.supplier.company or req.supplier.name} a refusé votre demande de {req.quantity}x {req.product_name}.",
                     icon="❌",
                     link="/app/fournisseurs",
+                    pref="notify_order_updates",
                 )
 
         return Response(req.to_frontend_dict())
@@ -145,6 +147,11 @@ class CreateRequestView(APIView):
             )
         data = serializer.validated_data
         product = get_object_or_404(Product, pk=data["product_id"])
+        if not product.supplier.shop_visible:
+            return Response(
+                {"message": "Cette boutique est temporairement indisponible."},
+                status=status.HTTP_409_CONFLICT,
+            )
 
         req = ProductRequest.objects.create(
             supplier=product.supplier,
@@ -162,6 +169,7 @@ class CreateRequestView(APIView):
             body=f"{request.user.name} souhaite {data['quantity']}x {product.name}.",
             icon="📦",
             link="/fournisseur/demandes",
+            pref="notify_new_orders",
         )
         log_activity(
             f"Nouvelle demande : {request.user.name} → {data['quantity']}x {product.name}",
@@ -224,6 +232,7 @@ class CatalogView(APIView):
         qs = Product.objects.filter(
             supplier__role=User.Role.SUPPLIER,
             supplier__status=User.Status.ACTIVE,
+            supplier__shop_visible=True,
             status=Product.Status.DISPONIBLE,
             stock__gt=0,
         ).select_related("supplier")

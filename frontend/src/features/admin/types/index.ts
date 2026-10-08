@@ -33,3 +33,15 @@ export interface AdminStats {
   recent_logs: SystemLog[];
   monthly_stats: MonthlyStat[];
 }
+
+export interface PlatformSettings {
+  auto_validate_suppliers: boolean;
+  confidence_threshold: number;
+  maintenance_mode: boolean;
+  /** Lecture seule : modèle IA réellement utilisé pour les diagnostics (défini côté serveur). */
+  active_model: string;
+}
+
+export type PlatformSettingsPayload = Partial<
+  Pick<PlatformSettings, 'auto_validate_suppliers' | 'confidence_threshold' | 'maintenance_mode'>
+>;

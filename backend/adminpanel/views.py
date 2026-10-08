@@ -4,7 +4,7 @@ from django.db.models.functions import TruncMonth
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -12,8 +12,9 @@ from chat.models import Message
 from diagnostics.models import Diagnostic
 from marketplace.models import Product
 
-from .models import ActivityLog, log_activity
+from .models import ActivityLog, PlatformSettings, log_activity
 from .permissions import IsAdminRole
+from .serializers import PlatformSettingsSerializer
 
 User = get_user_model()
 
@@ -192,3 +193,59 @@ class AdminLogsView(APIView):
     def get(self, request):
         logs = ActivityLog.objects.all()[:200]
         return Response([log.to_frontend_dict() for log in logs])
+
+
+def _settings_payload(platform_settings):
+    from ai_client.groq_client import VISION_MODEL
+
+    data = PlatformSettingsSerializer(platform_settings).data
+    # Informatif (lecture seule) : modèle réellement utilisé pour les diagnostics.
+    data["active_model"] = VISION_MODEL
+    return data
+
+
+class AdminSettingsView(APIView):
+    """GET/PATCH /api/admin/settings — paramètres système de la plateforme."""
+
+    permission_classes = [IsAuthenticated, IsAdminRole]
+
+    def get(self, request):
+        return Response(_settings_payload(PlatformSettings.load()))
+
+    def patch(self, request):
+        platform_settings = PlatformSettings.load()
+        serializer = PlatformSettingsSerializer(platform_settings, data=request.data, partial=True)
+        if not serializer.is_valid():
+            return Response(
+                {"message": "Erreur de validation.", "errors": serializer.errors},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        before = PlatformSettingsSerializer(platform_settings).data
+        serializer.save()
+        after = serializer.data
+
+        labels = {
+            "auto_validate_suppliers": "validation auto des fournisseurs",
+            "confidence_threshold": "seuil de confiance IA",
+            "maintenance_mode": "mode maintenance",
+        }
+        changed = [f"{labels[k]} : {before[k]} → {after[k]}" for k in labels if before[k] != after[k]]
+        if changed:
+            log_activity(
+                "Paramètres système modifiés (" + " ; ".join(changed) + ")",
+                user=request.user, type=ActivityLog.Type.ADMIN,
+                severity=ActivityLog.Severity.WARNING
+                if before["maintenance_mode"] != after["maintenance_mode"]
+                else ActivityLog.Severity.INFO,
+            )
+        return Response(_settings_payload(platform_settings))
+
+
+class PlatformStatusView(APIView):
+    """GET /api/platform/status — public : la plateforme est-elle en maintenance ?"""
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+        return Response({"maintenance": PlatformSettings.load().maintenance_mode})

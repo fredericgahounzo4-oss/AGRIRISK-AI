@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import PasswordResetToken
-from adminpanel.models import ActivityLog, log_activity
+from adminpanel.models import ActivityLog, PlatformSettings, log_activity
 from .serializers import (
     AvatarUploadSerializer,
     ChangePasswordSerializer,
@@ -23,6 +23,8 @@ from .serializers import (
 )
 
 User = get_user_model()
+
+MAINTENANCE_MESSAGE = "La plateforme est en maintenance. Merci de réessayer dans quelques instants."
 
 
 def auth_response(user, message=None, request=None):
@@ -51,6 +53,12 @@ class LoginView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         user = serializer.validated_data["user"]
+        # Mode maintenance : seuls les administrateurs peuvent se connecter.
+        if user.role != User.Role.ADMIN and PlatformSettings.load().maintenance_mode:
+            return Response(
+                {"message": MAINTENANCE_MESSAGE, "maintenance": True},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
         log_activity(f"Connexion réussie : {user.name}", user=user, type=ActivityLog.Type.AUTH)
         return Response(auth_response(user, request=request))
 
@@ -91,9 +99,14 @@ class RegisterSupplierView(APIView):
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
         user = serializer.save()
+        # Paramètre admin « validation automatique des fournisseurs ».
+        if PlatformSettings.load().auto_validate_suppliers:
+            user.status = User.Status.ACTIVE
+            user.save(update_fields=["status"])
         log_activity(
-            f"Nouveau fournisseur inscrit : {user.name}", user=user,
-            type=ActivityLog.Type.REGISTER,
+            f"Nouveau fournisseur inscrit : {user.name}"
+            + (" (validé automatiquement)" if user.status == User.Status.ACTIVE else ""),
+            user=user, type=ActivityLog.Type.REGISTER,
         )
         return Response(
             auth_response(user, message="Compte fournisseur créé avec succès.", request=request),
@@ -240,7 +253,9 @@ class SuppliersListView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        suppliers = User.objects.filter(role=User.Role.SUPPLIER, status=User.Status.ACTIVE)
+        suppliers = User.objects.filter(
+            role=User.Role.SUPPLIER, status=User.Status.ACTIVE, shop_visible=True
+        )
 
         category = request.query_params.get("category")
         if category and category != "Tous":
@@ -258,6 +273,8 @@ class SupplierDetailView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, pk):
-        supplier = get_object_or_404(User, pk=pk, role=User.Role.SUPPLIER, status=User.Status.ACTIVE)
+        supplier = get_object_or_404(
+            User, pk=pk, role=User.Role.SUPPLIER, status=User.Status.ACTIVE, shop_visible=True
+        )
         viewer = request.user if request.user.is_authenticated else None
         return Response(supplier.to_supplier_dict(viewer=viewer))

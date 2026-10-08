@@ -15,6 +15,7 @@ import { RegisterFarmerPage }   from '@/features/auth/pages/RegisterFarmerPage';
 import { RegisterSupplierPage } from '@/features/auth/pages/RegisterSupplierPage';
 import { ForgotPasswordPage }   from '@/features/auth/pages/ForgotPasswordPage';
 import { ResetPasswordPage }    from '@/features/auth/pages/ResetPasswordPage';
+import { MaintenancePage }      from '@/features/auth/pages/MaintenancePage';
 
 // ─── Public pages ────────────────────────────────────────────────────────────
 import { HomePage }            from '@/features/public/pages/HomePage';
@@ -143,6 +144,9 @@ export const router = createBrowserRouter([
       { path: 'parametres',      element: <AdminSettingsPage />    },
     ],
   },
+
+  // ── Maintenance (publique) ───────────────────────────────────────────────
+  { path: '/maintenance', element: <MaintenancePage /> },
 
   // ── Fallback ─────────────────────────────────────────────────────────────
   { path: '*', element: <Navigate to="/" replace /> },

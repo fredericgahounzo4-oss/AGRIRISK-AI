@@ -16,4 +16,5 @@ urlpatterns = [
     path("products/<uuid:pk>", views.AdminProductDetailView.as_view(), name="admin-product-detail"),
     path("diagnostics", views.AdminDiagnosticsView.as_view(), name="admin-diagnostics"),
     path("logs", views.AdminLogsView.as_view(), name="admin-logs"),
+    path("settings", views.AdminSettingsView.as_view(), name="admin-settings"),
 ]

@@ -34,11 +34,19 @@ class Notification(models.Model):
         }
 
 
-def notify(user, *, title: str, body: str = "", icon: str = "🔔", link: str = "") -> Notification:
+def notify(user, *, title: str, body: str = "", icon: str = "🔔", link: str = "", pref: str | None = None):
     """
     Petit helper pour créer une notification depuis n'importe quelle app
     (diagnostics, marketplace, ...) sans dépendance circulaire :
         from notifications.models import notify
         notify(user, title="...", body="...", icon="...", link="/app/...")
+
+    `pref` (optionnel) est le nom d'une préférence booléenne de l'utilisateur
+    (ex. "notify_new_orders", cf. page Paramètres) : si elle est désactivée,
+    aucune notification n'est créée et la fonction renvoie None.
     """
+    if user is None:
+        return None
+    if pref and not getattr(user, pref, True):
+        return None
     return Notification.objects.create(user=user, title=title, body=body, icon=icon, link=link)

@@ -1,84 +1,122 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Loader } from '@/components/ui/Loader';
+import { PreferenceRow } from '@/components/ui/PreferenceRow';
+import { PasswordChangeCard } from '@/features/auth/components/PasswordChangeCard';
+import { LanguageRegionCard } from '@/features/auth/components/LanguageRegionCard';
 import { Shield, Server, Database, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTranslation } from '@/lib/i18n/I18nContext';
+import { useAdminSettings, useUpdateAdminSettings } from '../hooks/useAdmin';
+import type { PlatformSettings } from '../types';
+
+const inputClass =
+  'w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-[#1a5c2a] focus:ring-2 focus:ring-[#1a5c2a]/20';
 
 export function AdminSettingsPage() {
-  const [autoValidate, setAutoValidate] = useState(false);
-  const [confidenceThreshold, setConfidenceThreshold] = useState(75);
-  const [modelVersion, setModelVersion] = useState('v2.1.0');
-  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const { t } = useTranslation();
+  const { data, isLoading, isError } = useAdminSettings();
+
+  if (isLoading) return <Loader text={t('common.loading')} />;
+  if (isError || !data) {
+    return <p className="text-sm text-red-600 text-center py-12">{t('adminSettings.loadError')}</p>;
+  }
+  return <AdminSettingsForm data={data} />;
+}
+
+function AdminSettingsForm({ data }: { data: PlatformSettings }) {
+  const { t } = useTranslation();
+  const save = useUpdateAdminSettings(t('adminSettings.saved'));
+  const toggleMaintenance = useUpdateAdminSettings(t('adminSettings.maintenanceUpdated'));
+
+  // Brouillon local des champs qui s'enregistrent avec le bouton « Enregistrer »
+  // (le mode maintenance, lui, s'applique immédiatement via son propre bouton).
+  const [autoValidate, setAutoValidate] = useState(data.auto_validate_suppliers);
+  const [threshold, setThreshold] = useState(String(data.confidence_threshold));
+
+  const thresholdValue = Number(threshold);
+  const thresholdValid =
+    threshold.trim() !== '' && Number.isInteger(thresholdValue) && thresholdValue >= 0 && thresholdValue <= 100;
+  const dirty =
+    autoValidate !== data.auto_validate_suppliers ||
+    (thresholdValid && thresholdValue !== data.confidence_threshold);
 
   const handleSave = () => {
-    toast.success('Paramètres enregistrés.');
+    if (!thresholdValid) {
+      toast.error(t('adminSettings.thresholdInvalid'));
+      return;
+    }
+    save.mutate({ auto_validate_suppliers: autoValidate, confidence_threshold: thresholdValue });
   };
 
-  const toggleMaintenance = () => {
-    setMaintenanceMode((v) => !v);
-    toast.success(maintenanceMode ? 'Mode maintenance désactivé.' : 'Mode maintenance activé — la plateforme est maintenant inaccessible aux utilisateurs non-admins.');
+  const handleToggleMaintenance = () => {
+    const next = !data.maintenance_mode;
+    if (next && !window.confirm(t('adminSettings.maintenanceConfirm'))) return;
+    toggleMaintenance.mutate({ maintenance_mode: next });
   };
 
   return (
     <div className="max-w-4xl space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Paramètres système</h1>
-          <p className="text-sm text-gray-500 mt-1">Configuration globale de la plateforme AgriRisk AI</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('adminSettings.title')}</h1>
+          <p className="text-sm text-gray-500 mt-1">{t('adminSettings.subtitle')}</p>
         </div>
-        <Button leftIcon={<Save className="w-4 h-4" />} onClick={handleSave}>Enregistrer</Button>
+        <Button
+          leftIcon={<Save className="w-4 h-4" />}
+          onClick={handleSave}
+          loading={save.isPending}
+          disabled={!dirty}
+        >
+          {t('adminSettings.save')}
+        </Button>
       </div>
 
       <div className="space-y-6">
         <Card padding="lg">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-purple-50 text-purple-600 rounded-lg"><Shield className="w-5 h-5" /></div>
-            <h2 className="text-lg font-bold text-gray-900">Sécurité & Accès</h2>
+            <h2 className="text-lg font-bold text-gray-900">{t('adminSettings.security')}</h2>
           </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Validation automatique des fournisseurs</p>
-                <p className="text-sm text-gray-500">Accepter automatiquement les nouvelles inscriptions fournisseurs</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={autoValidate}
-                  onChange={(e) => setAutoValidate(e.target.checked)}
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#22c55e]"></div>
-              </label>
-            </div>
-          </div>
+          <PreferenceRow
+            title={t('adminSettings.autoValidate')}
+            description={t('adminSettings.autoValidateDesc')}
+            checked={autoValidate}
+            onChange={setAutoValidate}
+          />
         </Card>
 
         <Card padding="lg">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Server className="w-5 h-5" /></div>
-            <h2 className="text-lg font-bold text-gray-900">Modèle IA</h2>
+            <h2 className="text-lg font-bold text-gray-900">{t('adminSettings.ai')}</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Seuil de confiance minimum (%)</label>
+              <label htmlFor="confidence-threshold" className="block text-sm font-medium text-gray-700 mb-1">
+                {t('adminSettings.threshold')}
+              </label>
               <input
+                id="confidence-threshold"
                 type="number"
-                value={confidenceThreshold}
-                onChange={(e) => setConfidenceThreshold(Number(e.target.value))}
-                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-[#1a5c2a] focus:ring-2 focus:ring-[#1a5c2a]/20"
+                min={0}
+                max={100}
+                step={1}
+                value={threshold}
+                onChange={(e) => setThreshold(e.target.value)}
+                className={`${inputClass} ${thresholdValid ? '' : 'border-red-400 focus:border-red-500 focus:ring-red-200'}`}
               />
+              <p className={`text-xs mt-1 ${thresholdValid ? 'text-gray-400' : 'text-red-600'}`}>
+                {thresholdValid ? t('adminSettings.thresholdHint') : t('adminSettings.thresholdInvalid')}
+              </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Version du modèle</label>
-              <select
-                value={modelVersion}
-                onChange={(e) => setModelVersion(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-[#1a5c2a] focus:ring-2 focus:ring-[#1a5c2a]/20"
-              >
-                <option value="v2.1.0">v2.1.0 (Production)</option>
-                <option value="v2.2.0-beta">v2.2.0-beta</option>
-              </select>
+              <label htmlFor="active-model" className="block text-sm font-medium text-gray-700 mb-1">
+                {t('adminSettings.activeModel')}
+              </label>
+              <input id="active-model" value={data.active_model} readOnly className={`${inputClass} bg-gray-50 text-gray-600`} />
+              <p className="text-xs mt-1 text-gray-400">{t('adminSettings.activeModelHint')}</p>
             </div>
           </div>
         </Card>
@@ -86,22 +124,35 @@ export function AdminSettingsPage() {
         <Card padding="lg">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-amber-50 text-amber-600 rounded-lg"><Database className="w-5 h-5" /></div>
-            <h2 className="text-lg font-bold text-gray-900">Maintenance</h2>
+            <h2 className="text-lg font-bold text-gray-900">{t('adminSettings.maintenance')}</h2>
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border border-amber-100 bg-amber-50/50 rounded-xl">
             <div>
-              <p className="font-bold text-gray-900">Mode maintenance {maintenanceMode && <span className="text-amber-700">(actif)</span>}</p>
-              <p className="text-sm text-gray-600">Rend la plateforme inaccessible aux utilisateurs non-admins.</p>
+              <p className="font-bold text-gray-900">
+                {t('adminSettings.maintenanceTitle')}{' '}
+                {data.maintenance_mode && (
+                  <span className="text-amber-700">{t('adminSettings.maintenanceActive')}</span>
+                )}
+              </p>
+              <p className="text-sm text-gray-600">{t('adminSettings.maintenanceDesc')}</p>
             </div>
             <Button
               variant="outline"
-              onClick={toggleMaintenance}
-              className={maintenanceMode ? 'text-gray-700 border-gray-300 hover:bg-gray-100' : 'text-amber-700 border-amber-200 hover:bg-amber-100'}
+              onClick={handleToggleMaintenance}
+              loading={toggleMaintenance.isPending}
+              className={
+                data.maintenance_mode
+                  ? 'text-gray-700 border-gray-300 hover:bg-gray-100'
+                  : 'text-amber-700 border-amber-200 hover:bg-amber-100'
+              }
             >
-              {maintenanceMode ? 'Désactiver le mode' : 'Activer le mode'}
+              {data.maintenance_mode ? t('adminSettings.maintenanceDisable') : t('adminSettings.maintenanceEnable')}
             </Button>
           </div>
         </Card>
+
+        <PasswordChangeCard />
+        <LanguageRegionCard showCountry={false} />
       </div>
     </div>
   );

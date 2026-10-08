@@ -49,6 +49,28 @@ def _release_stock(order: Order):
 
 
 # ------------------------------------------------------------------
+# Alertes de stock (préférence fournisseur « notify_stock_alerts »)
+# ------------------------------------------------------------------
+LOW_STOCK_THRESHOLD = 10
+
+
+def _notify_stock_level(product: Product, previous_stock: int):
+    """Prévient le fournisseur quand un produit tombe en rupture ou passe sous le seuil."""
+    if product.stock == 0:
+        notify(
+            product.supplier, title="Rupture de stock",
+            body=f"« {product.name} » est épuisé.",
+            icon="🚫", link="/fournisseur/produits", pref="notify_stock_alerts",
+        )
+    elif product.stock <= LOW_STOCK_THRESHOLD < previous_stock:
+        notify(
+            product.supplier, title="Stock faible",
+            body=f"Il ne reste que {product.stock} unité(s) de « {product.name} ».",
+            icon="⚠️", link="/fournisseur/produits", pref="notify_stock_alerts",
+        )
+
+
+# ------------------------------------------------------------------
 # Création de commande
 # ------------------------------------------------------------------
 @transaction.atomic
@@ -80,6 +102,8 @@ def create_order(*, buyer, items, delivery_method, delivery_address, phone, note
         raise OrderError("Vous ne pouvez pas commander vos propres produits.")
     if supplier.status != supplier.Status.ACTIVE:
         raise OrderError("Ce fournisseur n'est pas disponible actuellement.")
+    if not supplier.shop_visible:
+        raise OrderError("Cette boutique est temporairement indisponible.")
 
     subtotal = 0
     for pid, qty in merged.items():
@@ -117,10 +141,12 @@ def create_order(*, buyer, items, delivery_method, delivery_address, phone, note
             order=order, product=product, product_name=product.name,
             unit_price=product.price, quantity=qty,
         )
+        previous_stock = product.stock
         product.stock -= qty
         if product.stock == 0:
             product.status = Product.Status.RUPTURE
         product.save(update_fields=["stock", "status"])
+        _notify_stock_level(product, previous_stock)
 
     log_activity(
         f"Nouvelle commande {order.reference} : {buyer.name} → {order.supplier_name} ({_fmt(subtotal)})",
@@ -205,6 +231,7 @@ def apply_payment_status(payment: Payment, new_status: str, raw=None) -> Order:
                 order.buyer, title="Paiement non abouti",
                 body=f"Le paiement de la commande {order.reference} n'a pas abouti. Vous pouvez réessayer.",
                 icon="⚠️", link=f"/app/commandes/{order.id}",
+                pref="notify_order_updates",
             )
     return order
 
@@ -213,13 +240,13 @@ def _notify_paid(order: Order):
     notify(
         order.supplier, title="Nouvelle commande payée",
         body=f"{order.buyer_name} a payé la commande {order.reference} ({_fmt(order.subtotal)}).",
-        icon="💰", link="/fournisseur/commandes",
+        icon="💰", link="/fournisseur/commandes", pref="notify_new_orders",
     )
     if order.buyer:
         notify(
             order.buyer, title="Paiement confirmé",
             body=f"Votre paiement de {_fmt(order.subtotal)} pour la commande {order.reference} est confirmé.",
-            icon="✅", link=f"/app/commandes/{order.id}",
+            icon="✅", link=f"/app/commandes/{order.id}", pref="notify_order_updates",
         )
     log_activity(
         f"Commande payée {order.reference} ({_fmt(order.subtotal)})",
@@ -291,7 +318,7 @@ def supplier_set_status(order: Order, new_status: str) -> Order:
         }
         title, text, icon = labels[new_status]
         notify(order.buyer, title=title, body=f"Votre commande {order.reference} {text}",
-               icon=icon, link=f"/app/commandes/{order.id}")
+               icon=icon, link=f"/app/commandes/{order.id}", pref="notify_order_updates")
     log_activity(f"Commande {order.reference} → {order.get_status_display()}",
                  user=order.supplier, type=ActivityLog.Type.REQUEST)
     return order

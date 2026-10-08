@@ -30,7 +30,12 @@ api.interceptors.response.use(
     const status = error.response?.status;
     const message = error.response?.data?.message;
 
-    if (status === 401) {
+    if (status === 503 && error.response?.data?.maintenance === true) {
+      // Mode maintenance activé par un admin : page dédiée (les admins ne sont pas concernés).
+      if (window.location.pathname !== '/maintenance') {
+        window.location.href = '/maintenance';
+      }
+    } else if (status === 401) {
       localStorage.removeItem('agririsk_token');
       window.location.href = '/connexion';
     } else if (status === 422) {

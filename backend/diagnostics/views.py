@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 
 from ai_client.groq_client import AIConfigError, AIRequestError
 from notifications.models import notify
-from adminpanel.models import ActivityLog, log_activity
+from adminpanel.models import ActivityLog, PlatformSettings, log_activity
 
 from .models import Diagnostic
 from .serializers import DiagnosticUploadSerializer
@@ -57,6 +57,16 @@ class DiagnosticListCreateView(APIView):
             )
 
         parsed = result["parsed"]
+
+        # Paramètre admin « seuil de confiance minimum » : un diagnostic peu fiable
+        # est signalé à l'utilisateur et dans le journal d'activité.
+        threshold = PlatformSettings.load().confidence_threshold
+        low_confidence = parsed["confidence"] < threshold
+        if low_confidence:
+            parsed["recommendations"] = [
+                f"⚠️ Confiance de l'IA faible ({parsed['confidence']} % < seuil de {threshold} %) : "
+                "ce diagnostic est à confirmer par un technicien agricole ou un vétérinaire."
+            ] + list(parsed["recommendations"])
         # Remettre le curseur du fichier au début avant de le sauvegarder en base.
         image_file.seek(0)
 
@@ -80,11 +90,14 @@ class DiagnosticListCreateView(APIView):
             body=f"{diagnostic.disease_name} — risque {diagnostic.risk_level.lower()}.",
             icon="🌿" if diagnostic_type == "culture" else "🐄",
             link=f"/app/diagnostic/resultat/{diagnostic.id}",
+            pref="notify_diagnostics",
         )
         log_activity(
             f"Diagnostic soumis : {diagnostic.disease_name}", user=request.user,
             type=ActivityLog.Type.DIAGNOSTIC,
-            severity=ActivityLog.Severity.WARNING if diagnostic.risk_level in ("Élevé", "Critique") else ActivityLog.Severity.INFO,
+            severity=ActivityLog.Severity.WARNING
+            if low_confidence or diagnostic.risk_level in ("Élevé", "Critique")
+            else ActivityLog.Severity.INFO,
         )
 
         return Response(

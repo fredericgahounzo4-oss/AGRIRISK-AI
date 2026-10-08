@@ -14,6 +14,12 @@ export interface User {
   description?: string; // supplier-specific
   language?: string;
   country?: string;
+  // Préférences (page Paramètres) — absentes tant que le backend n'a pas répondu
+  notify_diagnostics?: boolean;   // agriculteur
+  notify_order_updates?: boolean; // agriculteur
+  notify_new_orders?: boolean;    // fournisseur
+  notify_stock_alerts?: boolean;  // fournisseur
+  shop_visible?: boolean;         // fournisseur
   created_at?: string;
 }
 

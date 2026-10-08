@@ -46,6 +46,14 @@ class User(AbstractUser):
     language = models.CharField(max_length=10, default="fr")
     country = models.CharField(max_length=100, default="Togo")
 
+    # Préférences de notification (page Paramètres) — notifications dans l'application.
+    notify_diagnostics = models.BooleanField(default=True)     # agriculteur : diagnostic terminé
+    notify_order_updates = models.BooleanField(default=True)   # agriculteur : demandes / commandes
+    notify_new_orders = models.BooleanField(default=True)      # fournisseur : nouvelles demandes / commandes
+    notify_stock_alerts = models.BooleanField(default=True)    # fournisseur : stock faible / rupture
+    # Fournisseur : boutique visible des agriculteurs (annuaire, catalogue, commandes).
+    shop_visible = models.BooleanField(default=True)
+
     # Photo de profil
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
 
@@ -77,6 +85,11 @@ class User(AbstractUser):
             "description": self.description,
             "language": self.language,
             "country": self.country,
+            "notify_diagnostics": self.notify_diagnostics,
+            "notify_order_updates": self.notify_order_updates,
+            "notify_new_orders": self.notify_new_orders,
+            "notify_stock_alerts": self.notify_stock_alerts,
+            "shop_visible": self.shop_visible,
             "created_at": self.date_joined.isoformat(),
         }
 

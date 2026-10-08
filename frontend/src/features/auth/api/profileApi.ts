@@ -11,6 +11,11 @@ export interface UpdateProfilePayload {
   description?: string;
   language?: string;
   country?: string;
+  notify_diagnostics?: boolean;
+  notify_order_updates?: boolean;
+  notify_new_orders?: boolean;
+  notify_stock_alerts?: boolean;
+  shop_visible?: boolean;
 }
 
 export interface ChangePasswordPayload {

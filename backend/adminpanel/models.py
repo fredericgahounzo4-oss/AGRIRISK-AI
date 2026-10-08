@@ -67,3 +67,33 @@ def log_activity(action, user=None, type=ActivityLog.Type.ADMIN, severity=Activi
         )
     except Exception:
         pass
+
+
+class PlatformSettings(models.Model):
+    """
+    Paramètres globaux de la plateforme (une seule ligne, pk=1), modifiables
+    depuis Admin > Paramètres système.
+    """
+
+    auto_validate_suppliers = models.BooleanField(default=False)
+    # En dessous de ce seuil (%), un diagnostic IA est signalé comme peu fiable.
+    confidence_threshold = models.PositiveSmallIntegerField(default=75)
+    # Si actif, seuls les administrateurs peuvent utiliser l'API.
+    maintenance_mode = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Paramètres de la plateforme"
+        verbose_name_plural = "Paramètres de la plateforme"
+
+    def __str__(self):
+        return "Paramètres de la plateforme"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj

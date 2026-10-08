@@ -92,6 +92,8 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
         fields = [
             "name", "phone", "region", "culture",
             "company", "category", "description", "language", "country",
+            "notify_diagnostics", "notify_order_updates",
+            "notify_new_orders", "notify_stock_alerts", "shop_visible",
         ]
         extra_kwargs = {field: {"required": False} for field in fields}
 

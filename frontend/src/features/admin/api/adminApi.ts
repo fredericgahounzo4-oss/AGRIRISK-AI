@@ -1,9 +1,19 @@
 import { api } from '@/services/api';
-import type { AdminUser, AdminStats, SystemLog } from '../types';
+import type { AdminUser, AdminStats, SystemLog, PlatformSettings, PlatformSettingsPayload } from '../types';
 import type { DiagnosticHistoryItem } from '@/features/diagnostic/types';
 import type { Product } from '@/features/supplier/types';
 
 export const adminApi = {
+  getSettings: async (): Promise<PlatformSettings> => {
+    const { data } = await api.get<PlatformSettings>('/admin/settings');
+    return data;
+  },
+
+  updateSettings: async (payload: PlatformSettingsPayload): Promise<PlatformSettings> => {
+    const { data } = await api.patch<PlatformSettings>('/admin/settings', payload);
+    return data;
+  },
+
   getStats: async (): Promise<AdminStats> => {
     const { data } = await api.get<AdminStats>('/admin/stats');
     return data;

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { adminApi } from '../api/adminApi';
+import type { PlatformSettingsPayload } from '../types';
 import { getApiErrorMessage } from '@/lib/apiError';
 
 export function useAdminStats() {
@@ -75,4 +76,20 @@ export function useAdminDiagnostics() {
 
 export function useAdminLogs() {
   return useQuery({ queryKey: ['admin', 'logs'], queryFn: adminApi.getLogs });
+}
+
+export function useAdminSettings() {
+  return useQuery({ queryKey: ['admin', 'settings'], queryFn: adminApi.getSettings });
+}
+
+export function useUpdateAdminSettings(successMessage: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: PlatformSettingsPayload) => adminApi.updateSettings(payload),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['admin', 'settings'], data);
+      toast.success(successMessage);
+    },
+    onError: (error) => toast.error(getApiErrorMessage(error, 'Erreur lors de l\'enregistrement des paramètres.')),
+  });
 }
