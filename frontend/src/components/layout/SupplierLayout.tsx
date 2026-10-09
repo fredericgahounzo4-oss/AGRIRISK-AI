@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { NavLink, useNavigate, Link, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, Building2, Package, ClipboardList,
-  BarChart3, Settings, LogOut, Leaf, ChevronRight, Menu, ShoppingBag, Wallet
+  BarChart3, Settings, LogOut, Leaf, ChevronRight, Menu, ShoppingBag, Wallet,
+  Microscope, MessageCircle, MessageSquare
 } from 'lucide-react';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useTranslation } from '@/lib/i18n/I18nContext';
 import { NotificationBell } from '@/features/notifications/components/NotificationBell';
+import { useUnreadMessages } from '@/features/messages/hooks/useMessages';
 import { cn } from '@/utils/cn';
 
 const navItems = [
@@ -15,6 +17,9 @@ const navItems = [
   { to: '/fournisseur/produits',          icon: Package,       labelKey: 'sidebar.products'          },
   { to: '/fournisseur/commandes',         icon: ShoppingBag,   labelKey: 'sidebar.supplierOrders'    },
   { to: '/fournisseur/demandes',          icon: ClipboardList, labelKey: 'sidebar.requests'          },
+  { to: '/fournisseur/messages',         icon: MessageSquare, labelKey: 'sidebar.messages'          },
+  { to: '/fournisseur/diagnostic',       icon: Microscope,    labelKey: 'sidebar.diagnosis'         },
+  { to: '/fournisseur/assistant',        icon: MessageCircle, labelKey: 'sidebar.assistant'         },
   { to: '/fournisseur/revenus',           icon: Wallet,        labelKey: 'sidebar.earnings'          },
   { to: '/fournisseur/statistiques',      icon: BarChart3,     labelKey: 'sidebar.stats'      },
   { to: '/fournisseur/parametres',        icon: Settings,      labelKey: 'sidebar.settings'        },
@@ -24,6 +29,7 @@ export function SupplierLayout() {
   const { user, logout } = useAuthStore();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { data: unreadMessages = 0 } = useUnreadMessages();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => { logout(); navigate('/connexion'); };
@@ -77,6 +83,11 @@ export function SupplierLayout() {
             >
               <Icon className="w-4.5 h-4.5 shrink-0" />
               <span className="flex-1">{t(labelKey)}</span>
+              {to === '/fournisseur/messages' && unreadMessages > 0 && (
+                <span className="min-w-5 h-5 px-1.5 rounded-full bg-amber-400 text-[#0f2e1d] text-xs font-bold flex items-center justify-center">
+                  {unreadMessages}
+                </span>
+              )}
               <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-40 transition-opacity" />
             </NavLink>
           ))}

@@ -42,6 +42,7 @@ import { PaymentSimulationPage } from '@/features/shop/pages/PaymentSimulationPa
 import { HistoryPage }         from '@/features/farmer/pages/HistoryPage';
 import { ProfilePage }         from '@/features/farmer/pages/ProfilePage';
 import { SettingsPage }        from '@/features/farmer/pages/SettingsPage';
+import { MessagesPage }        from '@/features/messages/pages/MessagesPage';
 
 // ─── Supplier pages ──────────────────────────────────────────────────────────
 import { SupplierDashboardPage } from '@/features/supplier/pages/SupplierDashboardPage';
@@ -98,6 +99,7 @@ export const router = createBrowserRouter([
       { path: 'diagnostic',              element: <DiagnosticPage />       },
       { path: 'diagnostic/resultat/:id', element: <DiagnosticResultPage /> },
       { path: 'assistant',               element: <AssistantPage />        },
+      { path: 'messages',                element: <MessagesPage />         },
       { path: 'fournisseurs',            element: <SuppliersPage />        },
       { path: 'boutique',                element: <ShopPage />             },
       { path: 'panier',                  element: <CartPage />             },
@@ -119,6 +121,10 @@ export const router = createBrowserRouter([
       { index: true,              element: <Navigate to="/fournisseur/tableau-de-bord" replace /> },
       { path: 'tableau-de-bord', element: <SupplierDashboardPage /> },
       { path: 'profil-entreprise',element: <CompanyProfilePage />   },
+      { path: 'diagnostic',       element: <DiagnosticPage />       },
+      { path: 'diagnostic/resultat/:id', element: <DiagnosticResultPage /> },
+      { path: 'assistant',        element: <AssistantPage />        },
+      { path: 'messages',         element: <MessagesPage />         },
       { path: 'produits',         element: <ProductsPage />         },
       { path: 'demandes',         element: <RequestsPage />         },
       { path: 'commandes',        element: <OrdersPage />           },

@@ -33,6 +33,11 @@ urlpatterns = [
     path("api/conversations/messages", chat_views.SendMessageView.as_view(), name="conversations-send-message"),
     path("api/conversations/<uuid:pk>/messages", chat_views.ConversationMessagesView.as_view(), name="conversation-messages"),
 
+    # Messagerie directe agriculteur ↔ fournisseur
+    path("api/messages/threads", chat_views.ThreadListCreateView.as_view(), name="threads-list-create"),
+    path("api/messages/threads/<uuid:pk>", chat_views.ThreadMessagesView.as_view(), name="threads-messages"),
+    path("api/messages/unread", chat_views.UnreadCountView.as_view(), name="messages-unread"),
+
     # Marketplace (produits fournisseur + demandes)
     path("api/marketplace/products", marketplace_views.ProductListCreateView.as_view(), name="products-list-create"),
     path("api/marketplace/products/<uuid:pk>", marketplace_views.ProductDetailView.as_view(), name="products-detail"),

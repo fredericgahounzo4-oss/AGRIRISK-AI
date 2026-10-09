@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Minus, Plus, ShoppingCart, Trash2, Store, ShieldCheck, Smartphone } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, Trash2, Store, Smartphone } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -33,7 +33,7 @@ function SupplierGroup({ supplierId, supplierName, items }: {
       return;
     }
     if (!phone.trim()) {
-      toast.error('Indiquez votre numéro de téléphone (Mobile Money).');
+      toast.error('Indiquez votre numéro de téléphone.');
       return;
     }
     checkout.mutate(
@@ -47,7 +47,7 @@ function SupplierGroup({ supplierId, supplierName, items }: {
       {
         onSuccess: ({ payment_url }) => {
           clearSupplier(supplierId);
-          // Redirection vers la page de paiement sécurisée FedaPay (Mobile Money / carte).
+          // Redirection vers la page de paiement FedaPay.
           window.location.href = payment_url;
         },
       }
@@ -118,7 +118,7 @@ function SupplierGroup({ supplierId, supplierName, items }: {
             placeholder="Quartier, village, repère…" />
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Input label="Téléphone (Mobile Money)" value={phone} onChange={(e) => setPhone(e.target.value)}
+          <Input label="Téléphone" value={phone} onChange={(e) => setPhone(e.target.value)}
             placeholder="Ex : 90 11 22 33" inputMode="tel" />
           <Input label="Message au fournisseur (optionnel)" value={note}
             onChange={(e) => setNote(e.target.value)} maxLength={500} />
@@ -133,7 +133,7 @@ function SupplierGroup({ supplierId, supplierName, items }: {
             <Button variant="ghost" onClick={() => clearSupplier(supplierId)}>Vider</Button>
             <Button size="lg" loading={checkout.isPending} onClick={handlePay}
               leftIcon={<Smartphone className="w-5 h-5" />}>
-              Payer {formatFcfa(total)}
+              Payer {formatFcfa(total)} avec FedaPay
             </Button>
           </div>
         </div>
@@ -177,13 +177,6 @@ export function CartPage() {
           {groups.map(([supplierId, g]) => (
             <SupplierGroup key={supplierId} supplierId={supplierId} supplierName={g.supplierName} items={g.items} />
           ))}
-          <div className="flex items-start gap-3 rounded-xl bg-[#e8f5e9] text-[#1a5c2a] text-sm p-4">
-            <ShieldCheck className="w-5 h-5 shrink-0 mt-0.5" />
-            <p>
-              Paiement sécurisé par FedaPay : T-Money, Flooz, MTN, Moov ou carte bancaire. Le fournisseur
-              reçoit son argent uniquement après votre confirmation de réception.
-            </p>
-          </div>
         </>
       )}
     </div>

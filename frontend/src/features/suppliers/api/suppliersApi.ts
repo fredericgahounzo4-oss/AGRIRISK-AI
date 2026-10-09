@@ -1,8 +1,8 @@
 import { api } from '@/services/api';
-import type { Supplier } from '../types';
+import type { Supplier, SupplierQuery } from '../types';
 
 export const suppliersApi = {
-  getAll: async (params?: { category?: string; lat?: number; lng?: number }): Promise<Supplier[]> => {
+  getAll: async (params?: SupplierQuery): Promise<Supplier[]> => {
     const { data } = await api.get<Supplier[]>('/suppliers', { params });
     return data;
   },

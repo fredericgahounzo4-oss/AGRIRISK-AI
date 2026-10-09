@@ -38,10 +38,10 @@ export function FeaturesPage() {
       points: ["Disponible 24h/24 et 7j/7", "Conseils personnalisés", "Historique de vos conversations"]
     },
     {
-      title: "Marketplace & paiement Mobile Money",
-      desc: "Commandez vos intrants directement auprès de fournisseurs vérifiés et payez en toute sécurité par Mobile Money (T-Money, Flooz, MTN, Moov) ou carte. Le fournisseur n'est payé qu'une fois votre commande reçue.",
+      title: "Marketplace & paiement en ligne",
+      desc: "Commandez vos intrants directement auprès de fournisseurs vérifiés et payez en toute sécurité avec FedaPay. Le fournisseur n'est payé qu'une fois votre commande reçue.",
       icon: Network,
-      points: ["Fournisseurs vérifiés", "Paiement Mobile Money sécurisé (FedaPay)", "Suivi de commande jusqu'à la livraison"]
+      points: ["Fournisseurs vérifiés", "Paiement sécurisé avec FedaPay", "Suivi de commande jusqu'à la livraison"]
     }
   ];
 

@@ -100,20 +100,26 @@ class User(AbstractUser):
         base["diagnostics"] = self.diagnostics.count()
         return base
 
-    def to_supplier_dict(self, viewer=None):
+    def to_supplier_dict(self, viewer=None, origin=None):
         """
         Format utilisé par la Carte des Fournisseurs (agriculteur).
-        `viewer` est l'utilisateur (agriculteur) qui consulte la carte,
-        utilisé pour calculer une distance approximative.
+        `viewer` est l'utilisateur (agriculteur) qui consulte la carte ;
+        `origin` = (lat, lng) optionnel : position réelle de l'appareil, prioritaire
+        sur la position du profil pour calculer la distance.
+        Les compteurs (produits, ventes) viennent des annotations posées par la vue
+        (`products_count`, `orders_done`) pour éviter une requête par fournisseur.
         """
         from .geo import haversine_km, resolve_coordinates
 
+        precise = self.lat is not None and self.lng is not None
         lat, lng = self.lat, self.lng
-        if lat is None or lng is None:
+        if not precise:
             lat, lng = resolve_coordinates(self.region, str(self.id))
 
-        distance = 0.0
-        if viewer is not None:
+        distance = None
+        if origin is not None:
+            distance = haversine_km(origin[0], origin[1], lat, lng)
+        elif viewer is not None:
             v_lat, v_lng = viewer.lat, viewer.lng
             if v_lat is None or v_lng is None:
                 v_lat, v_lng = resolve_coordinates(viewer.region, str(viewer.id))
@@ -123,13 +129,20 @@ class User(AbstractUser):
             "id": str(self.id),
             "name": self.company or self.name,
             "category": self.category or "Autre",
-            "distance": distance,
+            "description": self.description or "",
+            "distance": distance if distance is not None else 0.0,
+            "has_distance": distance is not None,
             "rating": 0,
             "reviews_count": 0,
             "address": self.address or self.region or "",
+            "region": self.region or "",
             "phone": self.phone,
             "lat": lat,
             "lng": lng,
+            "location_precise": precise,
+            "products_count": getattr(self, "products_count", 0),
+            "orders_done": getattr(self, "orders_done", 0),
+            "member_since": self.date_joined.isoformat(),
         }
 
 

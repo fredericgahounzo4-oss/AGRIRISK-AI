@@ -60,6 +60,7 @@ export const fr: Record<string, string> = {
   'sidebar.dashboard': 'Tableau de bord',
   'sidebar.diagnosis': 'Diagnostic IA',
   'sidebar.assistant': 'Assistant IA',
+  'sidebar.messages': 'Messages',
   'sidebar.supplierMap': 'Carte Fournisseurs',
   'sidebar.shop': 'Boutique',
   'sidebar.cart': 'Mon panier',

@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { diagnosticApi } from '../api/diagnosticApi';
 import { getApiErrorMessage } from '@/lib/apiError';
+import { useBasePath } from '@/features/auth/hooks/useBasePath';
 import type { DiagnosticType } from '../types';
 
 export function useAnalyzeDiagnostic() {
   const navigate = useNavigate();
+  const base = useBasePath();
 
   return useMutation({
     mutationFn: ({ type, image }: { type: DiagnosticType; image: File }) => {
@@ -17,7 +19,7 @@ export function useAnalyzeDiagnostic() {
     },
     onSuccess: (result) => {
       toast.success('Diagnostic terminé !');
-      navigate(`/app/diagnostic/resultat/${result.id}`);
+      navigate(`${base}/diagnostic/resultat/${result.id}`);
     },
     onError: (error) => {
       toast.error(getApiErrorMessage(error, "Erreur lors de l'analyse. Réessayez."), { duration: 6000 });

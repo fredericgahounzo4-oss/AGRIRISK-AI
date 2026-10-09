@@ -7,15 +7,24 @@ import { timeAgo, formatDate } from '@/utils/formatDate';
 import { useConversations, useMessages, useSendMessage } from '../hooks/useAssistant';
 import { getApiErrorMessage } from '@/lib/apiError';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '@/features/auth/store/authStore';
 import type { Message } from '../types';
 
-const quickSuggestions = [
+const farmerSuggestions = [
   'Comment traiter la rouille du maïs ?',
   'Engrais recommandé pour le maïs',
   'Calendrier cultural du maïs',
 ];
 
+const supplierSuggestions = [
+  'Comment rédiger une bonne fiche produit pour un engrais ?',
+  'Quels intrants sont les plus demandés avant la saison des pluies ?',
+  'Comment conseiller un client dont le maïs a la rouille ?',
+];
+
 export function AssistantPage() {
+  const isSupplier = useAuthStore((s) => s.user?.role === 'supplier');
+  const quickSuggestions = isSupplier ? supplierSuggestions : farmerSuggestions;
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -158,7 +167,9 @@ export function AssistantPage() {
           </button>
           <div className="min-w-0">
             <h1 className="text-xl font-bold text-[#1a2e1d]">Assistant IA</h1>
-            <p className="text-sm text-[#6b7c6e]">Posez vos questions agricoles et obtenez des conseils personnalisés.</p>
+            <p className="text-sm text-[#6b7c6e]">{isSupplier
+                ? 'Conseils sur vos produits, vos clients et la gestion de votre activité.'
+                : 'Posez vos questions agricoles et obtenez des conseils personnalisés.'}</p>
           </div>
         </div>
 
@@ -168,7 +179,9 @@ export function AssistantPage() {
             {localMessages.length === 0 && !sendMessage.isPending && (
               <div className="h-full flex flex-col items-center justify-center text-center text-[#6b7c6e]">
                 <MessageCircle className="w-10 h-10 text-[#4caf50] mb-3" />
-                <p className="text-sm">Posez une question sur vos cultures, vos animaux ou l'agriculture en général.</p>
+                <p className="text-sm">{isSupplier
+                    ? 'Posez une question sur vos produits, vos clients ou le marché des intrants.'
+                    : "Posez une question sur vos cultures, vos animaux ou l'agriculture en général."}</p>
               </div>
             )}
             {localMessages.map((msg) => (

@@ -89,7 +89,11 @@ class DiagnosticListCreateView(APIView):
             title="Diagnostic terminé",
             body=f"{diagnostic.disease_name} — risque {diagnostic.risk_level.lower()}.",
             icon="🌿" if diagnostic_type == "culture" else "🐄",
-            link=f"/app/diagnostic/resultat/{diagnostic.id}",
+            link=(
+                f"/fournisseur/diagnostic/resultat/{diagnostic.id}"
+                if request.user.role == "supplier"
+                else f"/app/diagnostic/resultat/{diagnostic.id}"
+            ),
             pref="notify_diagnostics",
         )
         log_activity(

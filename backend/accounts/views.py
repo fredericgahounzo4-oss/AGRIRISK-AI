@@ -242,27 +242,56 @@ class ResetPasswordView(APIView):
 User = get_user_model()
 
 
+def _supplier_queryset():
+    """Fournisseurs visibles, avec compteurs de produits en vente et de commandes livrées."""
+    from django.db.models import Count, Q
+
+    return User.objects.filter(
+        role=User.Role.SUPPLIER, status=User.Status.ACTIVE, shop_visible=True
+    ).annotate(
+        products_count=Count(
+            "products",
+            filter=Q(products__status="Disponible", products__stock__gt=0),
+            distinct=True,
+        ),
+        orders_done=Count(
+            "supplier_orders", filter=Q(supplier_orders__status="delivered"), distinct=True
+        ),
+    )
+
+
+def _origin_from_request(request):
+    """Position (lat, lng) envoyée par le navigateur via ?lat=&lng=, si valide."""
+    try:
+        lat = float(request.query_params.get("lat"))
+        lng = float(request.query_params.get("lng"))
+    except (TypeError, ValueError):
+        return None
+    if not (-90 <= lat <= 90 and -180 <= lng <= 180):
+        return None
+    return lat, lng
+
+
 class SuppliersListView(APIView):
     """
     GET /api/suppliers — annuaire des fournisseurs pour la Carte des
     Fournisseurs (agriculteur connecté) ET pour l'annuaire public
-    (page /fournisseurs-publics, sans connexion). Filtre optionnel
-    ?category=Semences.
+    (page /fournisseurs-publics, sans connexion).
+    Filtres : ?category=Semences  ?lat=&lng= (position réelle → distances exactes).
     """
 
     permission_classes = [AllowAny]
 
     def get(self, request):
-        suppliers = User.objects.filter(
-            role=User.Role.SUPPLIER, status=User.Status.ACTIVE, shop_visible=True
-        )
+        suppliers = _supplier_queryset()
 
         category = request.query_params.get("category")
         if category and category != "Tous":
             suppliers = suppliers.filter(category=category)
 
         viewer = request.user if request.user.is_authenticated else None
-        data = [s.to_supplier_dict(viewer=viewer) for s in suppliers]
+        origin = _origin_from_request(request)
+        data = [s.to_supplier_dict(viewer=viewer, origin=origin) for s in suppliers]
         data.sort(key=lambda s: s["distance"])
         return Response(data)
 
@@ -273,8 +302,6 @@ class SupplierDetailView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, pk):
-        supplier = get_object_or_404(
-            User, pk=pk, role=User.Role.SUPPLIER, status=User.Status.ACTIVE, shop_visible=True
-        )
+        supplier = get_object_or_404(_supplier_queryset(), pk=pk)
         viewer = request.user if request.user.is_authenticated else None
-        return Response(supplier.to_supplier_dict(viewer=viewer))
+        return Response(supplier.to_supplier_dict(viewer=viewer, origin=_origin_from_request(request)))

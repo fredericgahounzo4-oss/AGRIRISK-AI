@@ -78,7 +78,7 @@ export function PaymentReturnPage() {
           <Loader2 className="w-12 h-12 mx-auto animate-spin text-[#1a5c2a]" />
           <h1 className="text-xl font-bold text-[#1a2e1d]">Vérification du paiement…</h1>
           <p className="text-sm text-[#6b7c6e]">
-            Si vous payez par Mobile Money, validez la demande sur votre téléphone. Ne fermez pas cette page.
+            Si une validation vous est demandée sur votre téléphone, confirmez-la. Ne fermez pas cette page.
           </p>
         </>
       )}
@@ -105,7 +105,7 @@ export function PaymentReturnPage() {
           <Clock className="w-14 h-14 mx-auto text-amber-500" />
           <h1 className="text-xl font-bold text-[#1a2e1d]">Paiement en attente</h1>
           <p className="text-sm text-[#6b7c6e]">
-            Nous n'avons pas encore reçu la confirmation de votre opérateur. Si vous avez été débité, votre commande
+            Nous n'avons pas encore reçu la confirmation de FedaPay. Si vous avez été débité, votre commande
             sera mise à jour automatiquement dans quelques minutes.
           </p>
         </>

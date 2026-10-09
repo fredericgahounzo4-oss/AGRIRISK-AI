@@ -13,6 +13,21 @@ conversation vers l'agriculture. Précise, quand c'est pertinent, qu'un agronome
 vétérinaire local doit être consulté pour les décisions importantes."""
 
 
+SUPPLIER_SYSTEM_PROMPT = """Tu es l'Assistant IA d'AgriRisk AI pour les FOURNISSEURS d'intrants \
+agricoles d'Afrique de l'Ouest (Togo et pays voisins) : vendeurs de semences, engrais, \
+produits phytosanitaires et vétérinaires, équipements. Tu réponds en français, de façon \
+claire, concrète et actionnable. Tu aides sur : les caractéristiques et le bon usage des \
+produits (dosages, précautions, compatibilité avec les cultures), les conseils à donner aux \
+agriculteurs clients, la saisonnalité de la demande, la gestion de stock, la fixation des \
+prix, la rédaction de fiches produits et de réponses aux clients, ainsi que les maladies \
+des plantes et des animaux pour mieux orienter les clients.
+
+Réponds de manière concise (quelques paragraphes maximum), avec des listes à puces \
+quand c'est utile. Si la question sort du domaine agricole ou du commerce d'intrants, \
+réoriente poliment la conversation. Précise, quand c'est pertinent, qu'un agronome ou \
+vétérinaire local doit être consulté pour les décisions importantes."""
+
+
 def generate_reply(conversation, new_user_content: str) -> str:
     """
     Construit l'historique de la conversation au format API et appelle Groq.
@@ -28,7 +43,9 @@ def generate_reply(conversation, new_user_content: str) -> str:
         if m.role in ("user", "assistant")
     ]
 
-    return call_groq(messages, system=SYSTEM_PROMPT, max_tokens=4000)
+    is_supplier = getattr(conversation.user, "role", "") == "supplier"
+    system = SUPPLIER_SYSTEM_PROMPT if is_supplier else SYSTEM_PROMPT
+    return call_groq(messages, system=system, max_tokens=4000)
 
 
 def generate_title(first_message: str) -> str:

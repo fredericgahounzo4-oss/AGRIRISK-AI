@@ -1,17 +1,19 @@
 import { NavLink, useNavigate, Link } from 'react-router-dom';
 import {
   LayoutDashboard, Microscope, MessageCircle, MapPin,
-  History, User, Settings, LogOut, Leaf, ChevronRight, Store, ShoppingCart, ClipboardList
+  History, User, Settings, LogOut, Leaf, ChevronRight, Store, ShoppingCart, ClipboardList, MessageSquare
 } from 'lucide-react';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useTranslation } from '@/lib/i18n/I18nContext';
 import { cn } from '@/utils/cn';
 import { useCartStore, selectCartCount } from '@/features/shop/store/cartStore';
+import { useUnreadMessages } from '@/features/messages/hooks/useMessages';
 
 const navItems = [
   { to: '/app/tableau-de-bord', icon: LayoutDashboard, labelKey: 'sidebar.dashboard' },
   { to: '/app/diagnostic',      icon: Microscope,      labelKey: 'sidebar.diagnosis'   },
   { to: '/app/assistant',       icon: MessageCircle,   labelKey: 'sidebar.assistant'    },
+  { to: '/app/messages',        icon: MessageSquare,   labelKey: 'sidebar.messages'     },
   { to: '/app/fournisseurs',    icon: MapPin,          labelKey: 'sidebar.supplierMap' },
   { to: '/app/boutique',        icon: Store,           labelKey: 'sidebar.shop'        },
   { to: '/app/panier',          icon: ShoppingCart,    labelKey: 'sidebar.cart'        },
@@ -31,6 +33,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const cartCount = useCartStore(selectCartCount);
+  const { data: unreadMessages = 0 } = useUnreadMessages();
 
   const handleLogout = () => {
     logout();
@@ -97,6 +100,11 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
               {to === '/app/panier' && cartCount > 0 && (
                 <span className="min-w-5 h-5 px-1.5 rounded-full bg-amber-400 text-[#0f2e1d] text-xs font-bold flex items-center justify-center">
                   {cartCount}
+                </span>
+              )}
+              {to === '/app/messages' && unreadMessages > 0 && (
+                <span className="min-w-5 h-5 px-1.5 rounded-full bg-amber-400 text-[#0f2e1d] text-xs font-bold flex items-center justify-center">
+                  {unreadMessages}
                 </span>
               )}
               <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-40 transition-opacity" />

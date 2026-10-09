@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, ShoppingCart, Store, MapPin, Plus, Minus } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Search, ShoppingCart, Store, MapPin, Plus, Minus, MessageSquare, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -11,12 +11,14 @@ import { useCatalog } from '../hooks/useShop';
 import { useCartStore, selectCartCount } from '../store/cartStore';
 import { formatFcfa } from '../orderUi';
 import { ProductImage } from '../components/ProductImage';
+import { ContactSupplierModal } from '@/features/messages/components/ContactSupplierModal';
 import type { CatalogProduct } from '../types';
 
 function ProductCard({ product }: { product: CatalogProduct }) {
   const add = useCartStore((s) => s.add);
   const inCart = useCartStore((s) => s.items.find((i) => i.product_id === product.id)?.quantity ?? 0);
   const [qty, setQty] = useState(1);
+  const [contactOpen, setContactOpen] = useState(false);
   const remaining = product.stock - inCart;
 
   const handleAdd = () => {
@@ -80,7 +82,20 @@ function ProductCard({ product }: { product: CatalogProduct }) {
             {inCart > 0 ? `Ajouter (${inCart} au panier)` : 'Ajouter'}
           </Button>
         </div>
+        <Button variant="outline" size="sm" className="w-full" onClick={() => setContactOpen(true)}
+          leftIcon={<MessageSquare className="w-4 h-4" />}>
+          Message
+        </Button>
       </div>
+      {contactOpen && (
+        <ContactSupplierModal
+          supplierId={product.supplier_id}
+          supplierName={product.supplier_name}
+          productId={product.id}
+          productName={product.name}
+          onClose={() => setContactOpen(false)}
+        />
+      )}
     </Card>
   );
 }
@@ -88,6 +103,8 @@ function ProductCard({ product }: { product: CatalogProduct }) {
 export function ShopPage() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('Tous');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const supplierFilter = searchParams.get('fournisseur');
   const { data: products = [], isLoading, isError } = useCatalog();
   const cartCount = useCartStore(selectCartCount);
 
@@ -100,7 +117,9 @@ export function ShopPage() {
     const q = search.trim().toLowerCase();
     const matchSearch = !q || p.name.toLowerCase().includes(q) || p.supplier_name.toLowerCase().includes(q)
       || p.category.toLowerCase().includes(q);
-    return matchSearch && (category === 'Tous' || p.category === category);
+    return matchSearch
+      && (category === 'Tous' || p.category === category)
+      && (!supplierFilter || p.supplier_id === supplierFilter);
   });
 
   return (
@@ -109,7 +128,7 @@ export function ShopPage() {
         <div>
           <h1 className="text-2xl font-bold text-[#1a2e1d]">Boutique</h1>
           <p className="text-sm text-[#6b7c6e] mt-1">
-            Achetez vos intrants directement auprès des fournisseurs. Paiement sécurisé par Mobile Money ou carte.
+            Achetez vos intrants directement auprès des fournisseurs.
           </p>
         </div>
         <Link to="/app/panier">
@@ -145,6 +164,18 @@ export function ShopPage() {
           ))}
         </div>
       </div>
+
+      {supplierFilter && (
+        <div className="flex items-center gap-2 text-sm">
+          <span className="inline-flex items-center gap-2 rounded-full bg-[#e8f5e9] text-[#1a5c2a] px-3 py-1.5 font-medium">
+            <Store className="w-4 h-4" />
+            {products.find((p) => p.supplier_id === supplierFilter)?.supplier_name ?? 'Fournisseur sélectionné'}
+            <button onClick={() => setSearchParams({})} aria-label="Retirer le filtre" className="hover:opacity-70">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </span>
+        </div>
+      )}
 
       {isLoading ? (
         <Loader text="Chargement des produits…" />

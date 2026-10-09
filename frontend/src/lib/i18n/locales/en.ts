@@ -60,6 +60,7 @@ export const en: Record<string, string> = {
   'sidebar.dashboard': 'Dashboard',
   'sidebar.diagnosis': 'AI Diagnosis',
   'sidebar.assistant': 'AI Assistant',
+  'sidebar.messages': 'Messages',
   'sidebar.supplierMap': 'Supplier Map',
   'sidebar.shop': 'Shop',
   'sidebar.cart': 'My cart',

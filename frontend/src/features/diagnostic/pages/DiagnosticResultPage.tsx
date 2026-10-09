@@ -8,6 +8,7 @@ import { diagnosticApi } from '../api/diagnosticApi';
 import { getApiErrorMessage } from '@/lib/apiError';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
+import { useBasePath } from '@/features/auth/hooks/useBasePath';
 import type { RiskLevel } from '../types';
 
 const riskConfig: Record<RiskLevel, { label: string; color: string; bg: string }> = {
@@ -20,6 +21,7 @@ const riskConfig: Record<RiskLevel, { label: string; color: string; bg: string }
 export function DiagnosticResultPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const base = useBasePath();
   const { data: result, isLoading, isError, error } = useDiagnosticResult(id!);
   const [isDownloading, setIsDownloading] = useState(false);
 
@@ -51,7 +53,7 @@ export function DiagnosticResultPage() {
         <p className="text-sm text-[#6b7c6e]">
           {getApiErrorMessage(error, "Ce diagnostic n'existe pas ou n'a pas pu être chargé.")}
         </p>
-        <Button onClick={() => navigate('/app/diagnostic')}>Retour au diagnostic</Button>
+        <Button onClick={() => navigate(`${base}/diagnostic`)}>Retour au diagnostic</Button>
       </div>
     );
   }
@@ -64,7 +66,7 @@ export function DiagnosticResultPage() {
       {/* Navigation */}
       <div className="flex items-center justify-between">
         <button
-          onClick={() => navigate('/app/diagnostic')}
+          onClick={() => navigate(`${base}/diagnostic`)}
           className="flex items-center gap-2 text-sm text-[#6b7c6e] hover:text-[#1a2e1d] transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -192,10 +194,10 @@ export function DiagnosticResultPage() {
 
           {/* Actions */}
           <div className="flex gap-3">
-            <Button variant="outline" className="flex-1" onClick={() => navigate('/app/diagnostic')}>
+            <Button variant="outline" className="flex-1" onClick={() => navigate(`${base}/diagnostic`)}>
               Nouveau diagnostic
             </Button>
-            <Button className="flex-1" onClick={() => navigate('/app/assistant')}>
+            <Button className="flex-1" onClick={() => navigate(`${base}/assistant`)}>
               Consulter l'assistant
             </Button>
           </div>
