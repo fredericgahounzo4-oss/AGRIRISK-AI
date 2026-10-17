@@ -22,6 +22,10 @@ const supplierSuggestions = [
   'Comment conseiller un client dont le maïs a la rouille ?',
 ];
 
+// Référence stable : un `= []` inline créerait un nouveau tableau à chaque rendu et
+// relancerait l'effet de synchronisation en boucle (React error #185).
+const EMPTY_MESSAGES: Message[] = [];
+
 export function AssistantPage() {
   const isSupplier = useAuthStore((s) => s.user?.role === 'supplier');
   const quickSuggestions = isSupplier ? supplierSuggestions : farmerSuggestions;
@@ -33,7 +37,7 @@ export function AssistantPage() {
   const msgId = useId();
 
   const { data: conversations = [] } = useConversations();
-  const { data: fetchedMessages = [] } = useMessages(conversationId);
+  const { data: fetchedMessages = EMPTY_MESSAGES } = useMessages(conversationId);
   const sendMessage = useSendMessage();
 
   // Synchronise l'état local avec les messages récupérés du serveur
