@@ -8,6 +8,7 @@ import { AdminLayout }    from '@/components/layout/AdminLayout';
 
 // Guards
 import { RoleRoute } from '@/features/auth/components/RoleRoute';
+import { ErrorPage } from '@/components/layout/ErrorPage';
 
 // ─── Auth pages ──────────────────────────────────────────────────────────────
 import { LoginPage }            from '@/features/auth/pages/LoginPage';
@@ -69,6 +70,7 @@ export const router = createBrowserRouter([
   {
     path: '/',
     element: <PublicLayout />,
+    errorElement: <ErrorPage />,
     children: [
       { index: true,                    element: <HomePage />            },
       { path: 'fonctionnalites',        element: <FeaturesPage />        },
@@ -92,6 +94,7 @@ export const router = createBrowserRouter([
   // ── Farmer app (/app/*) ──────────────────────────────────────────────────
   {
     path: '/app',
+    errorElement: <ErrorPage />,
     element: <RoleRoute roles={['farmer']}><MainLayout /></RoleRoute>,
     children: [
       { index: true,                     element: <Navigate to="/app/tableau-de-bord" replace /> },
@@ -116,6 +119,7 @@ export const router = createBrowserRouter([
   // ── Supplier portal (/fournisseur/*) ─────────────────────────────────────
   {
     path: '/fournisseur',
+    errorElement: <ErrorPage />,
     element: <RoleRoute roles={['supplier']}><SupplierLayout /></RoleRoute>,
     children: [
       { index: true,              element: <Navigate to="/fournisseur/tableau-de-bord" replace /> },
@@ -137,6 +141,7 @@ export const router = createBrowserRouter([
   // ── Admin portal (/admin/*) ──────────────────────────────────────────────
   {
     path: '/admin',
+    errorElement: <ErrorPage />,
     element: <RoleRoute roles={['admin']}><AdminLayout /></RoleRoute>,
     children: [
       { index: true,              element: <Navigate to="/admin/tableau-de-bord" replace /> },
