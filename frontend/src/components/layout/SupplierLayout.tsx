@@ -10,6 +10,7 @@ import { useTranslation } from '@/lib/i18n/I18nContext';
 import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 import { useUnreadMessages } from '@/features/messages/hooks/useMessages';
 import { cn } from '@/utils/cn';
+import { InstallAppButton } from '@/components/pwa/InstallAppButton';
 
 const navItems = [
   { to: '/fournisseur/tableau-de-bord', icon: LayoutDashboard, labelKey: 'sidebar.dashboard' },
@@ -101,6 +102,7 @@ export function SupplierLayout() {
               <p className="text-xs text-white/50 truncate">{t('sidebar.supplier.role')}</p>
             </div>
           </div>
+          <InstallAppButton />
           <button
             onClick={handleLogout}
             className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:bg-red-500/10 hover:text-red-400 transition-all"

@@ -6,6 +6,7 @@ import {
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useTranslation } from '@/lib/i18n/I18nContext';
 import { cn } from '@/utils/cn';
+import { InstallAppButton } from '@/components/pwa/InstallAppButton';
 import { useCartStore, selectCartCount } from '@/features/shop/store/cartStore';
 import { useUnreadMessages } from '@/features/messages/hooks/useMessages';
 
@@ -123,6 +124,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
               <p className="text-xs text-white/50 truncate">{user?.region ?? t('sidebar.farmer.role')}</p>
             </div>
           </div>
+          <InstallAppButton />
           <button
             onClick={handleLogout}
             className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:bg-red-500/10 hover:text-red-400 transition-all"
